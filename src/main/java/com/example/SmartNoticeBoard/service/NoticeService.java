@@ -16,4 +16,7 @@ public interface NoticeService {
     List<NoticeDto> getAllNotices();
 
     List<NoticeDto> getNoticesForStudent(String department, Integer year);
+    
+    void deleteNoticeWithRoleCheck(Long id, Long userId);
+
 }

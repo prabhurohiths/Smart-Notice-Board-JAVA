@@ -186,4 +186,30 @@ public class NoticeServiceImpl implements NoticeService {
 				.map(this::mapToDto)
 				.collect(Collectors.toList());
 	}
+	
+	@Override
+	public void deleteNoticeWithRoleCheck(Long id, Long userId) {
+	    Notice notice = noticeRepository.findById(id)
+	            .orElseThrow(() -> new RuntimeException("Notice not found"));
+
+	    User user = userRepository.findById(userId)
+	            .orElseThrow(() -> new RuntimeException("User not found"));
+
+	    boolean isAdmin = user.getRoles().stream().anyMatch(r -> r.getName().equals("ADMIN"));
+	    boolean isTeacher = user.getRoles().stream().anyMatch(r -> r.getName().equals("TEACHER"));
+
+	    if (isAdmin) {
+	        noticeRepository.delete(notice);
+	    } else if (isTeacher) {
+	        // Teachers can delete only their own notices
+	        if (notice.getPostedBy().getId().equals(userId)) {
+	            noticeRepository.delete(notice);
+	        } else {
+	            throw new RuntimeException("You can only delete your own notices.");
+	        }
+	    } else {
+	        throw new RuntimeException("Students cannot delete notices.");
+	    }
+	}
+
 }

@@ -45,6 +45,13 @@ public class NoticeController {
 	public void deleteNotice(@PathVariable Long id) {
 		noticeService.deleteNotice(id);
 	}
+	
+	@DeleteMapping("/deleteNotice/{id}")
+	public List<NoticeDto> deleteNotice(@PathVariable Long id, @RequestParam Long userId) {
+	    noticeService.deleteNoticeWithRoleCheck(id, userId);
+	    return noticeService.getAllNotices();
+	}
+
 
 	// Admin-> View All Notices
 	@GetMapping("/getAllNotices")
