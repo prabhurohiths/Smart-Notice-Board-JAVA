@@ -35,9 +35,7 @@ public class UserServiceImpl implements UserService {
 		dto.setUsername(user.getUsername());
 		dto.setRoles(user.getRoles());
 		dto.setDepartment(user.getDepartment());
-		dto.setBranch(user.getBranch());
 		dto.setYear(user.getYear());
-		dto.setSection(user.getSection());
 		return dto;
 	}
 
@@ -52,9 +50,7 @@ public class UserServiceImpl implements UserService {
 			user.setRoles(roles);
 		}
 		user.setDepartment(dto.getDepartment());
-		user.setBranch(dto.getBranch());
 		user.setYear(dto.getYear());
-		user.setSection(dto.getSection());
 		return user;
 	}
 

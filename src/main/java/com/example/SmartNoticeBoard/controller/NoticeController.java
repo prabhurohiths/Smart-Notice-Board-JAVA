@@ -26,18 +26,12 @@ public class NoticeController {
 	private NoticeService noticeService;
 
 	// Admin/Teacher → Create Notice
-//	@PostMapping("/createNotice")
-//	public NoticeDto createNotice(@RequestBody NoticeDto noticeDto, @RequestParam Long postedById) {
-//		return noticeService.createNotice(noticeDto, postedById);
-//	}
-	
 	@PostMapping(value = "/createNotice", consumes = { "multipart/form-data" })
-	public NoticeDto createNotice(
-	        @RequestPart("notice") NoticeDto noticeDto,
-	        @RequestPart(value = "images", required = false) List<MultipartFile> images,
-	        @RequestParam Long postedById) {
+	public NoticeDto createNotice(@RequestPart("notice") NoticeDto noticeDto,
+			@RequestPart(value = "images", required = false) List<MultipartFile> images,
+			@RequestParam Long postedById) {
 
-	    return noticeService.createNotice(noticeDto, postedById, images);
+		return noticeService.createNotice(noticeDto, postedById, images);
 	}
 
 	// Admin/Teacher → Update Notice
@@ -58,15 +52,10 @@ public class NoticeController {
 		return noticeService.getAllNotices();
 	}
 
-	
-    @GetMapping("/getStudentNotices")
-    public List<NoticeDto> getStudentNotices(
-            @RequestParam String department,
-            @RequestParam Integer year) {
-
-        return noticeService.getNoticesForStudent(department, year);
-    }
-
+	@GetMapping("/getStudentNotices")
+	public List<NoticeDto> getStudentNotices(@RequestParam String department, @RequestParam Integer year) {
+		return noticeService.getNoticesForStudent(department, year);
+	}
 
 //	// Student → Filter Notices by Department
 //	@GetMapping("/department/{department}")

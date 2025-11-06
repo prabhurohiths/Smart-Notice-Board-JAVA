@@ -17,9 +17,7 @@ public class User {
     private String password;
 
     private String department;
-    private String branch;
     private Integer year;
-    private String section;
 
     @ManyToMany(fetch = FetchType.EAGER)
     @JoinTable(
@@ -61,28 +59,12 @@ public class User {
 		this.department = department;
 	}
 
-	public String getBranch() {
-		return branch;
-	}
-
-	public void setBranch(String branch) {
-		this.branch = branch;
-	}
-
 	public Integer getYear() {
 		return year;
 	}
 
 	public void setYear(Integer year) {
 		this.year = year;
-	}
-
-	public String getSection() {
-		return section;
-	}
-
-	public void setSection(String section) {
-		this.section = section;
 	}
 
 	public Set<Role> getRoles() {

@@ -10,9 +10,7 @@ public class UserDto {
     private String password;   // ✅ Needed for registration & login
 	private Set<Role> roles;
 	private String department;
-	private String branch;
 	private Integer year;
-	private String section;
 	private String token;
 	public Long getId() {
 		return id;
@@ -44,24 +42,14 @@ public class UserDto {
 	public void setDepartment(String department) {
 		this.department = department;
 	}
-	public String getBranch() {
-		return branch;
-	}
-	public void setBranch(String branch) {
-		this.branch = branch;
-	}
+
 	public Integer getYear() {
 		return year;
 	}
 	public void setYear(Integer year) {
 		this.year = year;
 	}
-	public String getSection() {
-		return section;
-	}
-	public void setSection(String section) {
-		this.section = section;
-	}
+
 	public String getToken() {
 		return token;
 	}
