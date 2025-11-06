@@ -1,15 +1,26 @@
 package com.example.SmartNoticeBoard.DTO;
 
+import java.util.List;
+
 public class NoticeDto {
 	private Long id;
 	private String title;
 	private String description;
 	private String department;
-	private String branch;
 	private Integer year;
-	private String section;
 	private String postedBy;
 	private String postedDate;
+	
+	private List<String> imagePaths;
+
+	public List<String> getImagePaths() {
+	    return imagePaths;
+	}
+
+	public void setImagePaths(List<String> imagePaths) {
+	    this.imagePaths = imagePaths;
+	}
+
 
 	public Long getId() {
 		return id;
@@ -43,13 +54,6 @@ public class NoticeDto {
 		this.department = department;
 	}
 
-	public String getBranch() {
-		return branch;
-	}
-
-	public void setBranch(String branch) {
-		this.branch = branch;
-	}
 
 	public Integer getYear() {
 		return year;
@@ -57,14 +61,6 @@ public class NoticeDto {
 
 	public void setYear(Integer year) {
 		this.year = year;
-	}
-
-	public String getSection() {
-		return section;
-	}
-
-	public void setSection(String section) {
-		this.section = section;
 	}
 
 	public String getPostedBy() {

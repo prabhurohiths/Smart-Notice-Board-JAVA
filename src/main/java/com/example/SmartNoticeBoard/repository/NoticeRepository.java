@@ -9,7 +9,5 @@ import com.example.SmartNoticeBoard.model.Notice;
 
 @Repository
 public interface NoticeRepository extends JpaRepository<Notice, Long> {
-    List<Notice> findAllByDepartmentAndBranchAndYearAndSection(
-        String department, String branch, Integer year, String section
-    );
+    List<Notice> findAllByDepartmentAndYear(String department, Integer year);
 }

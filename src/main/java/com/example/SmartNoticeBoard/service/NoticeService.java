@@ -4,8 +4,10 @@ package com.example.SmartNoticeBoard.service;
 import com.example.SmartNoticeBoard.DTO.NoticeDto;
 import java.util.List;
 
+import org.springframework.web.multipart.MultipartFile;
+
 public interface NoticeService {
-    NoticeDto createNotice(NoticeDto noticeDto, Long postedById);
+    NoticeDto createNotice(NoticeDto noticeDto, Long postedById, List<MultipartFile> images);
 
     NoticeDto updateNotice(Long id, NoticeDto noticeDto);
 
@@ -13,5 +15,5 @@ public interface NoticeService {
 
     List<NoticeDto> getAllNotices();
 
-    List<NoticeDto> getNoticesForStudent(String department, String branch, Integer year, String section);
+    List<NoticeDto> getNoticesForStudent(String department, Integer year);
 }

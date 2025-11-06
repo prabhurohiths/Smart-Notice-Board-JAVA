@@ -11,7 +11,9 @@ import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.RequestPart;
 import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.multipart.MultipartFile;
 
 import com.example.SmartNoticeBoard.DTO.NoticeDto;
 import com.example.SmartNoticeBoard.service.NoticeService;
@@ -24,9 +26,18 @@ public class NoticeController {
 	private NoticeService noticeService;
 
 	// Admin/Teacher → Create Notice
-	@PostMapping
-	public NoticeDto createNotice(@RequestBody NoticeDto noticeDto, @RequestParam Long postedById) {
-		return noticeService.createNotice(noticeDto, postedById);
+//	@PostMapping("/createNotice")
+//	public NoticeDto createNotice(@RequestBody NoticeDto noticeDto, @RequestParam Long postedById) {
+//		return noticeService.createNotice(noticeDto, postedById);
+//	}
+	
+	@PostMapping(value = "/createNotice", consumes = { "multipart/form-data" })
+	public NoticeDto createNotice(
+	        @RequestPart("notice") NoticeDto noticeDto,
+	        @RequestPart(value = "images", required = false) List<MultipartFile> images,
+	        @RequestParam Long postedById) {
+
+	    return noticeService.createNotice(noticeDto, postedById, images);
 	}
 
 	// Admin/Teacher → Update Notice
@@ -51,11 +62,9 @@ public class NoticeController {
     @GetMapping("/getStudentNotices")
     public List<NoticeDto> getStudentNotices(
             @RequestParam String department,
-            @RequestParam String branch,
-            @RequestParam Integer year,
-            @RequestParam String section) {
+            @RequestParam Integer year) {
 
-        return noticeService.getNoticesForStudent(department, branch, year, section);
+        return noticeService.getNoticesForStudent(department, year);
     }
 
 

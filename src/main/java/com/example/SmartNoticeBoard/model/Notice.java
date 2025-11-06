@@ -13,9 +13,17 @@ public class Notice {
     private String title;
     private String description;
     private String department;
-    private String branch;
     private Integer year;
-    private String section;
+    @Column(length = 2000)
+    private String imagePaths; // comma-separated paths
+
+    public String getImagePaths() {
+        return imagePaths;
+    }
+
+    public void setImagePaths(String imagePaths) {
+        this.imagePaths = imagePaths;
+    }
 
     @ManyToOne
     @JoinColumn(name = "posted_by")
@@ -55,13 +63,6 @@ public class Notice {
 		this.department = department;
 	}
 
-	public String getBranch() {
-		return branch;
-	}
-
-	public void setBranch(String branch) {
-		this.branch = branch;
-	}
 
 	public Integer getYear() {
 		return year;
@@ -69,14 +70,6 @@ public class Notice {
 
 	public void setYear(Integer year) {
 		this.year = year;
-	}
-
-	public String getSection() {
-		return section;
-	}
-
-	public void setSection(String section) {
-		this.section = section;
 	}
 
 	public User getPostedBy() {
