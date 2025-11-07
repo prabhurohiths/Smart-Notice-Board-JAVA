@@ -30,28 +30,38 @@ public class UserServiceImpl implements UserService {
 
 	private final JwtUtil jwtUtil = new JwtUtil();
 
+	// ✅ Convert Entity → DTO
 	private UserDto mapToDto(User user) {
 		UserDto dto = new UserDto();
 		dto.setId(user.getId());
 		dto.setUsername(user.getUsername());
+		dto.setName(user.getName());
+		dto.setMobileNumber(user.getMobileNumber());
+		dto.setGmail(user.getGmail());
 		dto.setRoles(user.getRoles());
 		dto.setDepartment(user.getDepartment());
 		dto.setYear(user.getYear());
 		return dto;
 	}
 
+	// ✅ Convert DTO → Entity
 	private User mapToEntity(UserDto dto) {
 		User user = new User();
 		user.setId(dto.getId());
 		user.setUsername(dto.getUsername());
-		user.setPassword(dto.getPassword()); // hashed password
+		user.setPassword(dto.getPassword()); // stored as plain/hased
+		user.setName(dto.getName());
+		user.setMobileNumber(dto.getMobileNumber());
+		user.setGmail(dto.getGmail());
+		user.setDepartment(dto.getDepartment());
+		user.setYear(dto.getYear());
+
 		if (dto.getRoles() != null) {
-			Set<Role> roles = dto.getRoles().stream().map(r -> roleRepository.findByName(r.getName()))
+			Set<Role> roles = dto.getRoles().stream()
+					.map(r -> roleRepository.findByName(r.getName()))
 					.collect(Collectors.toSet());
 			user.setRoles(roles);
 		}
-		user.setDepartment(dto.getDepartment());
-		user.setYear(dto.getYear());
 		return user;
 	}
 

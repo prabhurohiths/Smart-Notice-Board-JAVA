@@ -12,6 +12,10 @@ public class UserDto {
 	private String department;
 	private Integer year;
 	private String token;
+	private String name;
+	private String mobileNumber;
+	private String gmail;
+
 	public Long getId() {
 		return id;
 	}
@@ -55,6 +59,24 @@ public class UserDto {
 	}
 	public void setToken(String token) {
 		this.token = token;
+	}
+	public String getName() {
+		return name;
+	}
+	public void setName(String name) {
+		this.name = name;
+	}
+	public String getMobileNumber() {
+		return mobileNumber;
+	}
+	public void setMobileNumber(String mobileNumber) {
+		this.mobileNumber = mobileNumber;
+	}
+	public String getGmail() {
+		return gmail;
+	}
+	public void setGmail(String gmail) {
+		this.gmail = gmail;
 	}
 
 }

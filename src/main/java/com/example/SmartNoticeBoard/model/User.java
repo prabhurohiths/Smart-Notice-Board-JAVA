@@ -17,7 +17,17 @@ public class User {
     private String password;
 
     private String department;
+    
     private Integer year;
+    
+    @Column(name = "name")
+    private String name;
+
+    @Column(name = "mobile_number")
+    private String mobileNumber;
+
+    @Column(name = "gmail")
+    private String gmail;
 
     @ManyToMany(fetch = FetchType.EAGER)
     @JoinTable(
@@ -73,6 +83,30 @@ public class User {
 
 	public void setRoles(Set<Role> roles) {
 		this.roles = roles;
+	}
+
+	public String getName() {
+		return name;
+	}
+
+	public void setName(String name) {
+		this.name = name;
+	}
+
+	public String getMobileNumber() {
+		return mobileNumber;
+	}
+
+	public void setMobileNumber(String mobileNumber) {
+		this.mobileNumber = mobileNumber;
+	}
+
+	public String getGmail() {
+		return gmail;
+	}
+
+	public void setGmail(String gmail) {
+		this.gmail = gmail;
 	}
 
 
