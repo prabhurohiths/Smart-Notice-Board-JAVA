@@ -1,5 +1,7 @@
 package com.example.SmartNoticeBoard.service;
 
+import java.util.List;
+
 import com.example.SmartNoticeBoard.DTO.AuthResponseDTO;
 import com.example.SmartNoticeBoard.DTO.UserDto;
 
@@ -13,5 +15,7 @@ public interface UserService {
 
     // Login user (returns user info)
     UserDto login(String username, String password);
+    
+    List<UserDto> getAllTeachersAndAdmins();
 }
 

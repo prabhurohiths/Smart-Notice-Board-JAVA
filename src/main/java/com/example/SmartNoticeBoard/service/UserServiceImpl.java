@@ -1,5 +1,6 @@
 package com.example.SmartNoticeBoard.service;
 
+import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
 
@@ -84,4 +85,12 @@ public class UserServiceImpl implements UserService {
 		}
 		return mapToDto(user);
 	}
+	
+    @Override
+    public List<UserDto> getAllTeachersAndAdmins() {
+        List<String> roles = List.of("ADMIN", "TEACHER");
+        List<User> users = userRepository.findByRoleNames(roles);
+
+        return users.stream().map(this::mapToDto).collect(Collectors.toList());
+    }
 }

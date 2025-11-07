@@ -220,5 +220,36 @@ public class NoticeServiceImpl implements NoticeService {
 	        throw new RuntimeException("Students cannot delete notices.");
 	    }
 	}
+	
+	
+	@Override
+	public List<NoticeDto> filterNoticesByUserAndYear(String postedBy, Integer year, Integer uploadedYear, String department) {
+	    List<Notice> allNotices = noticeRepository.findAll();
+
+	    return allNotices.stream()
+	        // 🔹 Filter by postedBy (admin/teacher)
+	        .filter(n -> postedBy == null ||
+	            (n.getPostedBy() != null &&
+	             n.getPostedBy().getUsername() != null &&
+	             n.getPostedBy().getUsername().equalsIgnoreCase(postedBy)))
+
+	        // 🔹 Filter by academic year (1st, 2nd, etc.)
+	        .filter(n -> year == null || (n.getYear() != null && n.getYear().equals(year)))
+
+	        // 🔹 Filter by uploaded year (e.g., 2025)
+	        .filter(n -> {
+	            if (uploadedYear == null || n.getPostedDate() == null) return true;
+	            return n.getPostedDate().getYear() == uploadedYear;
+	        })
+
+	        // 🔹 Filter by department (handles "ALL")
+	        .filter(n -> department == null ||
+	            department.equalsIgnoreCase("ALL") ||
+	            (n.getDepartment() != null && n.getDepartment().equalsIgnoreCase(department)))
+
+	        .map(this::mapToDto)
+	        .collect(Collectors.toList());
+	}
+
 
 }

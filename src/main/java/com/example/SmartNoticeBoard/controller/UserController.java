@@ -1,6 +1,9 @@
 package com.example.SmartNoticeBoard.controller;
 
+import java.util.List;
+
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -51,5 +54,11 @@ public class UserController {
 	public UserDto login(@RequestBody UserDto userDto) {
 		return userService.login(userDto.getUsername(), userDto.getPassword());
 	}
+	
+    // ✅ Get all Admin and Teacher users
+    @GetMapping("/getAllTeachersAndAdmins")
+    public List<UserDto> getAllTeachersAndAdmins() {
+        return userService.getAllTeachersAndAdmins();
+    }
 
 }
