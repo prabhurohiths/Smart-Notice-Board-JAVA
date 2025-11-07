@@ -152,8 +152,6 @@ public class NoticeServiceImpl implements NoticeService {
 	}
 
 
-
-
 	@Override
 	public NoticeDto updateNotice(Long id, NoticeDto noticeDto) {
 		Notice existing = noticeRepository.findById(id).orElseThrow(() -> new RuntimeException("Notice not found"));
@@ -180,12 +178,23 @@ public class NoticeServiceImpl implements NoticeService {
 
 	@Override
 	public List<NoticeDto> getNoticesForStudent(String department, Integer year) {
-		List<Notice> allNotices = noticeRepository.findAll();
-		return allNotices.stream().filter(n -> (n.getDepartment() == null || n.getDepartment().equals(department)))
-				.filter(n -> (n.getYear() == null || n.getYear().equals(year)))
-				.map(this::mapToDto)
-				.collect(Collectors.toList());
+	    List<Notice> allNotices = noticeRepository.findAll();
+
+	    return allNotices.stream()
+	        .filter(n ->
+	            n.getDepartment() == null ||
+	            n.getDepartment().equalsIgnoreCase("ALL") ||
+	            n.getDepartment().equalsIgnoreCase(department)
+	        )
+	        .filter(n ->
+	            n.getYear() == null ||
+	            n.getYear() == 0 ||
+	            n.getYear().equals(year)
+	        )
+	        .map(this::mapToDto)
+	        .collect(Collectors.toList());
 	}
+
 	
 	@Override
 	public void deleteNoticeWithRoleCheck(Long id, Long userId) {
