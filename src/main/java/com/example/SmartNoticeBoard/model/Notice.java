@@ -6,30 +6,42 @@ import java.time.LocalDateTime;
 @Entity
 @Table(name = "notices")
 public class Notice {
-    @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long id;
+	
+	@Id
+	@GeneratedValue(strategy = GenerationType.IDENTITY)
+	private Long id;
+	
+	private String title;
+	
+	private String description;
+	
+	private String department;
+	
+	private Integer year;
+	
+	@Column(length = 2000)
+	private String imagePaths; // comma-separated paths
+	
+	@ManyToOne
+	@JoinColumn(name = "posted_by")
+	private User postedBy;
+	
+	private LocalDateTime postedDate = LocalDateTime.now();
+	
+	@ManyToOne
+	@JoinColumn(name = "modified_by")
+	private User modifiedBy;
 
-    private String title;
-    private String description;
-    private String department;
-    private Integer year;
-    @Column(length = 2000)
-    private String imagePaths; // comma-separated paths
+	@Column(name = "modified_date")
+	private LocalDateTime modifiedDate;
 
-    public String getImagePaths() {
-        return imagePaths;
-    }
+	public String getImagePaths() {
+		return imagePaths;
+	}
 
-    public void setImagePaths(String imagePaths) {
-        this.imagePaths = imagePaths;
-    }
-
-    @ManyToOne
-    @JoinColumn(name = "posted_by")
-    private User postedBy;
-
-    private LocalDateTime postedDate = LocalDateTime.now();
+	public void setImagePaths(String imagePaths) {
+		this.imagePaths = imagePaths;
+	}
 
 	public Long getId() {
 		return id;
@@ -63,7 +75,6 @@ public class Notice {
 		this.department = department;
 	}
 
-
 	public Integer getYear() {
 		return year;
 	}
@@ -88,6 +99,20 @@ public class Notice {
 		this.postedDate = postedDate;
 	}
 
-    // Getters and Setters
-}
+	public User getModifiedBy() {
+		return modifiedBy;
+	}
 
+	public void setModifiedBy(User modifiedBy) {
+		this.modifiedBy = modifiedBy;
+	}
+
+	public LocalDateTime getModifiedDate() {
+		return modifiedDate;
+	}
+
+	public void setModifiedDate(LocalDateTime modifiedDate) {
+		this.modifiedDate = modifiedDate;
+	}
+
+}

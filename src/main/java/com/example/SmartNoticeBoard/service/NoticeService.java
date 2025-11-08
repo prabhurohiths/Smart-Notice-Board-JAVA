@@ -9,11 +9,13 @@ import org.springframework.web.multipart.MultipartFile;
 public interface NoticeService {
     NoticeDto createNotice(NoticeDto noticeDto, Long postedById, List<MultipartFile> images);
 
-    NoticeDto updateNotice(Long id, NoticeDto noticeDto);
-
     void deleteNotice(Long id);
+    
+    NoticeDto getNoticeById(Long id);
 
     List<NoticeDto> getAllNotices();
+    
+    NoticeDto updateNoticeWithImages(Long id, NoticeDto noticeDto, List<MultipartFile> files);
 
     List<NoticeDto> getNoticesForStudent(String department, Integer year);
     

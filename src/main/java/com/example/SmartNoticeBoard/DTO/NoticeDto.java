@@ -1,5 +1,6 @@
 package com.example.SmartNoticeBoard.DTO;
 
+import java.time.LocalDateTime;
 import java.util.List;
 
 public class NoticeDto {
@@ -10,8 +11,10 @@ public class NoticeDto {
 	private Integer year;
 	private String postedBy;
 	private String postedDate;
-	
 	private List<String> imagePaths;
+	private String modifiedBy;
+	private String modifiedDate;
+	private List<String> imageFileNames;
 
 	public List<String> getImagePaths() {
 	    return imagePaths;
@@ -77,6 +80,30 @@ public class NoticeDto {
 
 	public void setPostedDate(String postedDate) {
 		this.postedDate = postedDate;
+	}
+
+	public String getModifiedBy() {
+		return modifiedBy;
+	}
+
+	public void setModifiedBy(String modifiedBy) {
+		this.modifiedBy = modifiedBy;
+	}
+
+	public String getModifiedDate() {
+		return modifiedDate;
+	}
+
+	public void setModifiedDate(String modifiedDate) {
+		this.modifiedDate = modifiedDate;
+	}
+
+	public List<String> getImageFileNames() {
+		return imageFileNames;
+	}
+
+	public void setImageFileNames(List<String> imageFileNames) {
+		this.imageFileNames = imageFileNames;
 	}
 
 }
