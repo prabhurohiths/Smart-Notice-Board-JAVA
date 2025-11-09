@@ -14,6 +14,7 @@ public class UserDto {
 	private String token;
 	private String name;
 	private String mobileNumber;
+	private String dateOfBirth;
 	private String gmail;
 	private boolean firstLogin;
 
@@ -72,6 +73,12 @@ public class UserDto {
 	}
 	public void setMobileNumber(String mobileNumber) {
 		this.mobileNumber = mobileNumber;
+	}
+	public String getDateOfBirth() {
+	    return dateOfBirth;
+	}
+	public void setDateOfBirth(String dateOfBirth) {
+	    this.dateOfBirth = dateOfBirth;
 	}
 	public String getGmail() {
 		return gmail;

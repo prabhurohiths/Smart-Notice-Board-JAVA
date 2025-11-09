@@ -1,6 +1,8 @@
 package com.example.SmartNoticeBoard.model;
 
 import jakarta.persistence.*;
+
+import java.time.LocalDate;
 import java.util.Set;
 
 @Entity
@@ -25,6 +27,9 @@ public class User {
 
     @Column(name = "mobile_number")
     private String mobileNumber;
+    
+    @Column(name = "date_of_birth")
+    private LocalDate dateOfBirth;
 
     @Column(name = "gmail")
     private String gmail;
@@ -103,6 +108,14 @@ public class User {
 	public void setMobileNumber(String mobileNumber) {
 		this.mobileNumber = mobileNumber;
 	}
+	
+    public LocalDate getDateOfBirth() {
+        return dateOfBirth;
+    }
+
+    public void setDateOfBirth(LocalDate dateOfBirth) {
+        this.dateOfBirth = dateOfBirth;
+    }
 
 	public String getGmail() {
 		return gmail;

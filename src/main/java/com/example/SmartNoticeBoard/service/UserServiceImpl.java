@@ -1,5 +1,6 @@
 package com.example.SmartNoticeBoard.service;
 
+import java.time.LocalDate;
 import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
@@ -38,6 +39,7 @@ public class UserServiceImpl implements UserService {
 		dto.setUsername(user.getUsername());
 		dto.setName(user.getName());
 		dto.setMobileNumber(user.getMobileNumber());
+	    dto.setDateOfBirth(user.getDateOfBirth() != null ? user.getDateOfBirth().toString() : null);
 		dto.setGmail(user.getGmail());
 		dto.setRoles(user.getRoles());
 		dto.setDepartment(user.getDepartment());
@@ -57,6 +59,10 @@ public class UserServiceImpl implements UserService {
 		user.setGmail(dto.getGmail());
 		user.setDepartment(dto.getDepartment());
 		user.setYear(dto.getYear());
+		
+	    if (dto.getDateOfBirth() != null) {
+	        user.setDateOfBirth(LocalDate.parse(dto.getDateOfBirth()));
+	    }
 
 		if (dto.getRoles() != null) {
 			Set<Role> roles = dto.getRoles().stream()
