@@ -19,5 +19,13 @@ public interface UserService {
     void resetPassword(String username, String newPassword);
     
     List<UserDto> getAllTeachersAndAdmins();
+    
+    
+    
+    
+    List<UserDto> getAllUsers();
+    UserDto getUserById(Long id);
+    void updateUser(Long id, UserDto userDto);
+    void deleteUser(Long id);
 }
 

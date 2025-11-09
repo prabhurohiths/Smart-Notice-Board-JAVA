@@ -141,4 +141,56 @@ public class UserServiceImpl implements UserService {
 
         return users.stream().map(this::mapToDto).collect(Collectors.toList());
     }
+    
+    
+    
+    
+    
+    @Override
+    public List<UserDto> getAllUsers() {
+        List<User> users = userRepository.findAll();
+        return users.stream().map(this::mapToDto).collect(Collectors.toList());
+    }
+
+    @Override
+    public UserDto getUserById(Long id) {
+        User user = userRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("User not found with ID: " + id));
+        return mapToDto(user);
+    }
+
+    @Override
+    public void updateUser(Long id, UserDto userDto) {
+        User existingUser = userRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("User not found with ID: " + id));
+
+        // Update editable fields
+        existingUser.setName(userDto.getName());
+        existingUser.setGmail(userDto.getGmail());
+        existingUser.setMobileNumber(userDto.getMobileNumber());
+        existingUser.setDepartment(userDto.getDepartment());
+        existingUser.setYear(userDto.getYear());
+        if (userDto.getDateOfBirth() != null) {
+            existingUser.setDateOfBirth(LocalDate.parse(userDto.getDateOfBirth()));
+        }
+
+        // Update roles if provided
+        if (userDto.getRoles() != null && !userDto.getRoles().isEmpty()) {
+            Set<Role> roles = userDto.getRoles().stream()
+                    .map(r -> roleRepository.findByName(r.getName()))
+                    .collect(Collectors.toSet());
+            existingUser.setRoles(roles);
+        }
+
+        userRepository.save(existingUser);
+    }
+
+    @Override
+    public void deleteUser(Long id) {
+        if (!userRepository.existsById(id)) {
+            throw new RuntimeException("User not found with ID: " + id);
+        }
+        userRepository.deleteById(id);
+    }
+
 }
