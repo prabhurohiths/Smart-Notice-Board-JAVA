@@ -28,6 +28,9 @@ public class User {
 
     @Column(name = "gmail")
     private String gmail;
+    
+    @Column(name = "first_login")
+    private boolean firstLogin = true; // true means user must reset password
 
     @ManyToMany(fetch = FetchType.EAGER)
     @JoinTable(
@@ -108,6 +111,14 @@ public class User {
 	public void setGmail(String gmail) {
 		this.gmail = gmail;
 	}
+	
+    public boolean isFirstLogin() {
+        return firstLogin;
+    }
+
+    public void setFirstLogin(boolean firstLogin) {
+        this.firstLogin = firstLogin;
+    }
 
 
 }

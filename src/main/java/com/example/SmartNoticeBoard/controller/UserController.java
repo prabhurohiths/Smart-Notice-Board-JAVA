@@ -1,8 +1,11 @@
 package com.example.SmartNoticeBoard.controller;
 
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -13,26 +16,11 @@ import org.springframework.web.bind.annotation.RestController;
 import com.example.SmartNoticeBoard.DTO.AuthResponseDTO;
 import com.example.SmartNoticeBoard.DTO.UserDto;
 import com.example.SmartNoticeBoard.service.UserService;
+import com.example.SmartNoticeBoard.util.PasswordHashGenerator;
 
 @RestController
 @RequestMapping("/user")
 public class UserController {
-
-//	private final UserService userService = new UserService();
-//
-//	@PostMapping("/login")
-//	public AuthResponseDTO login(@RequestParam String username, @RequestParam String password) {
-//		AuthResponseDTO authResponseDTO = userService.login(username, password);
-//		return authResponseDTO;
-//	}
-//
-//	@PostMapping("/refresh")
-//	public AuthResponseDTO refreshToken(@RequestParam String refreshToken) {
-//		AuthResponseDTO authResponseDTO = userService.refreshToken(refreshToken);
-//		return authResponseDTO;
-//	}
-
-	// -------------------------------------------------------------------------------
 
 	@Autowired
 	private UserService userService;
@@ -45,6 +33,7 @@ public class UserController {
 
 	@PostMapping("/token")
 	public AuthResponseDTO token(@RequestParam String username, @RequestParam String password) {
+		PasswordHashGenerator.generatePassword();
 		AuthResponseDTO authResponseDTO = userService.generateToken(username, password);
 		return authResponseDTO;
 	}
@@ -53,6 +42,14 @@ public class UserController {
 	@PostMapping("/login")
 	public UserDto login(@RequestBody UserDto userDto) {
 		return userService.login(userDto.getUsername(), userDto.getPassword());
+	}
+	
+	@PostMapping("/resetPassword")
+	public ResponseEntity<Map<String, String>> resetPassword(@RequestParam String username, @RequestParam String newPassword) {
+	    userService.resetPassword(username, newPassword);
+	    Map<String, String> response = new HashMap<>();
+	    response.put("message", "Password updated successfully");
+	    return ResponseEntity.ok(response);
 	}
 	
     // ✅ Get all Admin and Teacher users

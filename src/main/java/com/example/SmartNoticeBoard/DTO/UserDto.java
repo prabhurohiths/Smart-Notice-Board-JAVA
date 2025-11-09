@@ -15,6 +15,7 @@ public class UserDto {
 	private String name;
 	private String mobileNumber;
 	private String gmail;
+	private boolean firstLogin;
 
 	public Long getId() {
 		return id;
@@ -77,6 +78,14 @@ public class UserDto {
 	}
 	public void setGmail(String gmail) {
 		this.gmail = gmail;
+	}
+	
+	public boolean isFirstLogin() { 
+		return firstLogin;
+	}
+	
+	public void setFirstLogin(boolean firstLogin) {
+		this.firstLogin = firstLogin; 
 	}
 
 }

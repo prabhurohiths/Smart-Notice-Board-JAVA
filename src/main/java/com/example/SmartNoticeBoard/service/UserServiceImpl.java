@@ -15,6 +15,7 @@ import com.example.SmartNoticeBoard.model.User;
 import com.example.SmartNoticeBoard.repository.RoleRepository;
 import com.example.SmartNoticeBoard.repository.UserRepository;
 import com.example.SmartNoticeBoard.security.JwtUtil;
+import com.example.SmartNoticeBoard.util.AESUtil;
 
 @Service
 public class UserServiceImpl implements UserService {
@@ -41,6 +42,7 @@ public class UserServiceImpl implements UserService {
 		dto.setRoles(user.getRoles());
 		dto.setDepartment(user.getDepartment());
 		dto.setYear(user.getYear());
+		dto.setFirstLogin(user.isFirstLogin());
 		return dto;
 	}
 
@@ -67,34 +69,64 @@ public class UserServiceImpl implements UserService {
 
 	@Override
 	public UserDto register(UserDto userDto) {
-		if (userRepository.findByUsername(userDto.getUsername()) != null) {
-			throw new RuntimeException("User already exists");
-		}
-		User saved = userRepository.save(mapToEntity(userDto));
-		return mapToDto(saved);
+	    if (userRepository.findByUsername(userDto.getUsername()) != null) {
+	        throw new RuntimeException("User already exists");
+	    }
+
+	    // 1️⃣ Decrypt AES password from frontend
+	    String decryptedPassword = AESUtil.decrypt(userDto.getPassword());
+
+	    // 2️⃣ Hash with BCrypt
+	    String hashedPassword = passwordEncoder.encode(decryptedPassword);
+
+	    // 3️⃣ Map and save
+	    User user = mapToEntity(userDto);
+	    user.setPassword(hashedPassword); // store hashed password
+	    user.setFirstLogin(true); // mark as first login if you need that
+	    User saved = userRepository.save(user);
+
+	    return mapToDto(saved);
 	}
+
 
 
 	@Override
 	public AuthResponseDTO generateToken(String username, String password) {
-		User user = userRepository.findByUsername(username);
-		if (user == null || !user.getPassword().equals(password)) {
-			throw new RuntimeException("Invalid credentials");
-		}
-		String accessToken = jwtUtil.generateToken(user.getUsername());
-		String refreshToken = jwtUtil.generateRefreshToken(user.getUsername());
+	    String decryptedPassword = AESUtil.decrypt(password);
+	    User user = userRepository.findByUsername(username);
 
-		return new AuthResponseDTO(accessToken, refreshToken);
+	    if (user == null || !passwordEncoder.matches(decryptedPassword, user.getPassword())) {
+	        throw new RuntimeException("Invalid credentials");
+	    }
+
+	    String accessToken = jwtUtil.generateToken(user.getUsername());
+	    String refreshToken = jwtUtil.generateRefreshToken(user.getUsername());
+	    return new AuthResponseDTO(accessToken, refreshToken);
 	}
 
 	@Override
 	public UserDto login(String username, String password) {
-		User user = userRepository.findByUsername(username);
-		if (user == null || !user.getPassword().equals(password)) {
-			throw new RuntimeException("Invalid credentials");
-		}
-		return mapToDto(user);
+	    String decryptedPassword = AESUtil.decrypt(password);
+	    User user = userRepository.findByUsername(username);
+
+	    if (user == null || !passwordEncoder.matches(decryptedPassword, user.getPassword())) {
+	        throw new RuntimeException("Invalid credentials");
+	    }
+
+	    return mapToDto(user);
 	}
+	
+	@Override
+	public void resetPassword(String username, String newPassword) {
+	    User user = userRepository.findByUsername(username);
+	    if (user == null) throw new RuntimeException("User not found");
+
+	    String decrypted = AESUtil.decrypt(newPassword);
+	    user.setPassword(passwordEncoder.encode(decrypted));
+	    user.setFirstLogin(false);
+	    userRepository.save(user);
+	}
+
 	
     @Override
     public List<UserDto> getAllTeachersAndAdmins() {

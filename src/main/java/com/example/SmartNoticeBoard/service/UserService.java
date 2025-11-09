@@ -16,6 +16,8 @@ public interface UserService {
     // Login user (returns user info)
     UserDto login(String username, String password);
     
+    void resetPassword(String username, String newPassword);
+    
     List<UserDto> getAllTeachersAndAdmins();
 }
 
