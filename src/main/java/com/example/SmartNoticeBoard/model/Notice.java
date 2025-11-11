@@ -15,9 +15,15 @@ public class Notice {
 	
 	private String description;
 	
-	private String department;
+	@ManyToOne
+	@JoinColumn(name = "department_id")
+	private Department department;
+
 	
-	private Integer year;
+	@ManyToOne
+	@JoinColumn(name = "year_id")
+	private Year year;
+
 	
 	@Column(length = 2000)
 	private String imagePaths; // comma-separated paths
@@ -67,19 +73,19 @@ public class Notice {
 		this.description = description;
 	}
 
-	public String getDepartment() {
+	public Department getDepartment() {
 		return department;
 	}
 
-	public void setDepartment(String department) {
+	public void setDepartment(Department department) {
 		this.department = department;
 	}
 
-	public Integer getYear() {
+	public Year getYear() {
 		return year;
 	}
 
-	public void setYear(Integer year) {
+	public void setYear(Year year) {
 		this.year = year;
 	}
 

@@ -6,16 +6,21 @@ import java.nio.file.Paths;
 import java.time.LocalDateTime;
 import java.util.*;
 import java.util.stream.Collectors;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
 import com.example.SmartNoticeBoard.DTO.NoticeDto;
+import com.example.SmartNoticeBoard.model.Department;
 import com.example.SmartNoticeBoard.model.Notice;
 import com.example.SmartNoticeBoard.model.User;
+import com.example.SmartNoticeBoard.model.Year;
+import com.example.SmartNoticeBoard.repository.DepartmentRepository;
 import com.example.SmartNoticeBoard.repository.NoticeRepository;
 import com.example.SmartNoticeBoard.repository.UserRepository;
+import com.example.SmartNoticeBoard.repository.YearRepository;
 
 @Service
 public class NoticeServiceImpl implements NoticeService {
@@ -26,6 +31,12 @@ public class NoticeServiceImpl implements NoticeService {
     @Autowired
     private UserRepository userRepository;
 
+    @Autowired
+    private DepartmentRepository departmentRepository;
+
+    @Autowired
+    private YearRepository YearRepository;
+
     @Value("${notice.image.base-path}")
     private String baseDir;
 
@@ -35,63 +46,35 @@ public class NoticeServiceImpl implements NoticeService {
         dto.setId(notice.getId());
         dto.setTitle(notice.getTitle());
         dto.setDescription(notice.getDescription());
-        dto.setDepartment(notice.getDepartment());
-        dto.setYear(notice.getYear());
+        dto.setDepartment(notice.getDepartment() != null ? notice.getDepartment().getName() : null);
+        dto.setYear(notice.getYear() != null ? notice.getYear().getYearNumber() : null);
         dto.setPostedBy(notice.getPostedBy() != null ? notice.getPostedBy().getUsername() : null);
         dto.setPostedDate(notice.getPostedDate() != null ? notice.getPostedDate().toString() : null);
         dto.setModifiedBy(notice.getModifiedBy() != null ? notice.getModifiedBy().getUsername() : null);
         if (notice.getModifiedDate() != null)
             dto.setModifiedDate(notice.getModifiedDate().toString());
 
-        // Convert image file names to Base64
-//        if (notice.getImagePaths() != null && !notice.getImagePaths().isEmpty()) {
-//            List<String> base64Images = Arrays.stream(notice.getImagePaths().split(","))
-//                    .map(String::trim)
-//                    .map(fileName -> {
-//                        try {
-//                            String fullPath = baseDir + fileName;
-//                            byte[] fileContent = Files.readAllBytes(Paths.get(fullPath));
-//
-//                            String contentType = "image/jpeg";
-//                            String lower = fileName.toLowerCase();
-//                            if (lower.endsWith(".png")) contentType = "image/png";
-//                            else if (lower.endsWith(".gif")) contentType = "image/gif";
-//
-//                            return "data:" + contentType + ";base64," + Base64.getEncoder().encodeToString(fileContent);
-//                        } catch (Exception e) {
-//                            System.err.println("❌ Failed to encode image: " + fileName + " → " + e.getMessage());
-//                            return null;
-//                        }
-//                    })
-//                    .filter(Objects::nonNull)
-//                    .collect(Collectors.toList());
-//            dto.setImagePaths(base64Images);
-//        }
-        
+        // ✅ Convert image file names to Base64
         if (notice.getImagePaths() != null && !notice.getImagePaths().isEmpty()) {
             List<String> fileNames = Arrays.stream(notice.getImagePaths().split(","))
                     .map(String::trim)
                     .collect(Collectors.toList());
-            dto.setImageFileNames(fileNames); // ✅ Store actual filenames
+            dto.setImageFileNames(fileNames);
 
-            List<String> base64Images = fileNames.stream()
-                    .map(fileName -> {
-                        try {
-                            String fullPath = baseDir + fileName;
-                            byte[] fileContent = Files.readAllBytes(Paths.get(fullPath));
-                            String contentType = "image/jpeg";
-                            if (fileName.toLowerCase().endsWith(".png")) contentType = "image/png";
-                            else if (fileName.toLowerCase().endsWith(".gif")) contentType = "image/gif";
+            List<String> base64Images = fileNames.stream().map(fileName -> {
+                try {
+                    String fullPath = baseDir + fileName;
+                    byte[] fileContent = Files.readAllBytes(Paths.get(fullPath));
+                    String contentType = "image/jpeg";
+                    if (fileName.toLowerCase().endsWith(".png")) contentType = "image/png";
+                    else if (fileName.toLowerCase().endsWith(".gif")) contentType = "image/gif";
 
-                            return "data:" + contentType + ";base64," +
-                                    Base64.getEncoder().encodeToString(fileContent);
-                        } catch (Exception e) {
-                            return null;
-                        }
-                    })
-                    .filter(Objects::nonNull)
-                    .collect(Collectors.toList());
-            dto.setImagePaths(base64Images); // ✅ still send for preview
+                    return "data:" + contentType + ";base64," + Base64.getEncoder().encodeToString(fileContent);
+                } catch (Exception e) {
+                    return null;
+                }
+            }).filter(Objects::nonNull).collect(Collectors.toList());
+            dto.setImagePaths(base64Images);
         }
 
         return dto;
@@ -103,16 +86,28 @@ public class NoticeServiceImpl implements NoticeService {
         notice.setId(dto.getId());
         notice.setTitle(dto.getTitle());
         notice.setDescription(dto.getDescription());
-        notice.setDepartment(dto.getDepartment());
-        notice.setYear(dto.getYear());
-        notice.setPostedDate(dto.getPostedDate() != null
-                ? LocalDateTime.parse(dto.getPostedDate())
-                : LocalDateTime.now());
-        if (dto.getModifiedDate() != null) {
-            notice.setModifiedDate(LocalDateTime.parse(dto.getModifiedDate()));
-        } else {
-            notice.setModifiedDate(null);
+
+        // 🔹 Department validation — must exist, not auto-create
+        if (dto.getDepartment() != null && !dto.getDepartment().isBlank()) {
+            Department dept = departmentRepository.findByName(dto.getDepartment());
+            if (dept == null) {
+                throw new RuntimeException("Invalid department: " + dto.getDepartment());
+            }
+            notice.setDepartment(dept);
         }
+
+        // 🔹 Year mapping using Year
+        if (dto.getYear() != null) {
+            Year Year = YearRepository.findByYearNumber(dto.getYear());
+            if (Year == null) {
+                throw new RuntimeException("Invalid year: " + dto.getYear());
+            }
+            notice.setYear(Year);
+        }
+
+        notice.setPostedDate(
+                dto.getPostedDate() != null ? LocalDateTime.parse(dto.getPostedDate()) : LocalDateTime.now());
+        notice.setModifiedDate(dto.getModifiedDate() != null ? LocalDateTime.parse(dto.getModifiedDate()) : null);
 
         return notice;
     }
@@ -121,7 +116,8 @@ public class NoticeServiceImpl implements NoticeService {
     private List<String> saveFiles(List<MultipartFile> files) {
         List<String> fileNames = new ArrayList<>();
         File dir = new File(baseDir);
-        if (!dir.exists()) dir.mkdirs();
+        if (!dir.exists())
+            dir.mkdirs();
 
         for (MultipartFile file : files) {
             try {
@@ -163,18 +159,34 @@ public class NoticeServiceImpl implements NoticeService {
 
         existing.setTitle(noticeDto.getTitle());
         existing.setDescription(noticeDto.getDescription());
-        existing.setDepartment(noticeDto.getDepartment());
-        existing.setYear(noticeDto.getYear());
         existing.setModifiedDate(LocalDateTime.now());
-        
+
+        // 🔹 Department validation — must exist
+        if (noticeDto.getDepartment() != null && !noticeDto.getDepartment().isBlank()) {
+            Department dept = departmentRepository.findByName(noticeDto.getDepartment());
+            if (dept == null) {
+                throw new RuntimeException("Invalid department: " + noticeDto.getDepartment());
+            }
+            existing.setDepartment(dept);
+        }
+
+        // 🔹 Year validation — must exist
+        if (noticeDto.getYear() != null) {
+            Year Year = YearRepository.findByYearNumber(noticeDto.getYear());
+            if (Year == null) {
+                throw new RuntimeException("Invalid year: " + noticeDto.getYear());
+            }
+            existing.setYear(Year);
+        }
+
+        // 🔹 Modified By user
         User user = userRepository.findByUsername(noticeDto.getModifiedBy());
         if (user == null) {
             throw new RuntimeException("User not found for username: " + noticeDto.getModifiedBy());
         }
         existing.setModifiedBy(user);
 
-           
-        // 🧩 Collect existing stored image filenames
+        // 🧩 Manage image file updates
         List<String> existingFiles = new ArrayList<>();
         if (existing.getImagePaths() != null && !existing.getImagePaths().isEmpty()) {
             existingFiles = Arrays.stream(existing.getImagePaths().split(","))
@@ -182,29 +194,23 @@ public class NoticeServiceImpl implements NoticeService {
                     .collect(Collectors.toList());
         }
 
-        // 🧩 Collect remaining image base64 strings from frontend (if any)
         List<String> remainingFromFrontend = noticeDto.getImagePaths() != null
                 ? noticeDto.getImagePaths()
                 : new ArrayList<>();
 
-        // 🧩 Delete removed old files (those present before but not sent now)
         for (String oldFile : existingFiles) {
-            boolean stillExists = remainingFromFrontend.stream()
-                    .anyMatch(base64 -> base64.contains(oldFile));
+            boolean stillExists = remainingFromFrontend.stream().anyMatch(base64 -> base64.contains(oldFile));
             if (!stillExists) {
                 try {
                     Files.deleteIfExists(Paths.get(baseDir + oldFile));
-                    System.out.println("🗑 Deleted old image: " + oldFile);
                 } catch (Exception e) {
                     System.err.println("⚠️ Could not delete old image: " + oldFile);
                 }
             }
         }
 
-        // 🧩 Handle new uploaded files
         List<String> finalFileNames = existingFiles.stream()
-                .filter(oldFile -> remainingFromFrontend.stream()
-                        .anyMatch(base64 -> base64.contains(oldFile)))
+                .filter(oldFile -> remainingFromFrontend.stream().anyMatch(base64 -> base64.contains(oldFile)))
                 .collect(Collectors.toList());
 
         if (files != null && !files.isEmpty()) {
@@ -212,13 +218,11 @@ public class NoticeServiceImpl implements NoticeService {
             finalFileNames.addAll(newFiles);
         }
 
-        // 🧩 Update DB with final file list
         existing.setImagePaths(finalFileNames.isEmpty() ? null : String.join(",", finalFileNames));
 
         Notice updated = noticeRepository.save(existing);
         return mapToDto(updated);
     }
-
 
     @Override
     public NoticeDto getNoticeById(Long id) {
@@ -229,8 +233,7 @@ public class NoticeServiceImpl implements NoticeService {
 
     @Override
     public List<NoticeDto> getAllNotices() {
-        return noticeRepository.findAll()
-                .stream()
+        return noticeRepository.findAll().stream()
                 .map(this::mapToDto)
                 .collect(Collectors.toList());
     }
@@ -252,7 +255,6 @@ public class NoticeServiceImpl implements NoticeService {
         boolean isTeacher = user.getRoles().stream().anyMatch(r -> r.getName().equals("TEACHER"));
 
         if (isAdmin || (isTeacher && notice.getPostedBy().getId().equals(userId))) {
-            // Delete associated images
             if (notice.getImagePaths() != null) {
                 Arrays.stream(notice.getImagePaths().split(","))
                         .map(String::trim)
@@ -273,14 +275,13 @@ public class NoticeServiceImpl implements NoticeService {
     @Override
     public List<NoticeDto> filterNoticesByUserAndYear(String postedBy, Integer year, Integer uploadedYear, String department) {
         return noticeRepository.findAll().stream()
-                .filter(n -> postedBy == null || (n.getPostedBy() != null &&
-                        n.getPostedBy().getUsername().equalsIgnoreCase(postedBy)))
-                .filter(n -> year == null || (n.getYear() != null && n.getYear().equals(year)))
-                .filter(n -> uploadedYear == null || (n.getPostedDate() != null &&
-                        n.getPostedDate().getYear() == uploadedYear))
-                .filter(n -> department == null ||
-                        department.equalsIgnoreCase("ALL") ||
-                        (n.getDepartment() != null && n.getDepartment().equalsIgnoreCase(department)))
+                .filter(n -> postedBy == null
+                        || (n.getPostedBy() != null && n.getPostedBy().getUsername().equalsIgnoreCase(postedBy)))
+                .filter(n -> year == null || (n.getYear() != null && n.getYear().getYearNumber().equals(year)))
+                .filter(n -> uploadedYear == null
+                        || (n.getPostedDate() != null && n.getPostedDate().getYear() == uploadedYear))
+                .filter(n -> department == null || department.equalsIgnoreCase("ALL")
+                        || (n.getDepartment() != null && n.getDepartment().getName().equalsIgnoreCase(department)))
                 .map(this::mapToDto)
                 .collect(Collectors.toList());
     }
@@ -288,12 +289,8 @@ public class NoticeServiceImpl implements NoticeService {
     @Override
     public List<NoticeDto> getNoticesForStudent(String department, Integer year) {
         return noticeRepository.findAll().stream()
-                .filter(n -> n.getDepartment() == null ||
-                        n.getDepartment().equalsIgnoreCase("ALL") ||
-                        n.getDepartment().equalsIgnoreCase(department))
-                .filter(n -> n.getYear() == null ||
-                        n.getYear() == 0 ||
-                        n.getYear().equals(year))
+                .filter(n -> n.getDepartment() != null && n.getDepartment().getName().equalsIgnoreCase(department))
+                .filter(n -> n.getYear() != null && n.getYear().getYearNumber().equals(year))
                 .map(this::mapToDto)
                 .collect(Collectors.toList());
     }

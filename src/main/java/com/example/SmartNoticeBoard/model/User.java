@@ -18,9 +18,14 @@ public class User {
     @Column(nullable = false)
     private String password;
 
-    private String department;
+    @ManyToOne
+    @JoinColumn(name = "department_id")
+    private Department department;
     
-    private Integer year;
+    @ManyToOne
+    @JoinColumn(name = "year_id")
+    private Year year;
+
     
     @Column(name = "name")
     private String name;
@@ -69,19 +74,19 @@ public class User {
 		this.password = password;
 	}
 
-	public String getDepartment() {
+	public Department getDepartment() {
 		return department;
 	}
 
-	public void setDepartment(String department) {
+	public void setDepartment(Department department) {
 		this.department = department;
 	}
 
-	public Integer getYear() {
+	public Year getYear() {
 		return year;
 	}
 
-	public void setYear(Integer year) {
+	public void setYear(Year year) {
 		this.year = year;
 	}
 

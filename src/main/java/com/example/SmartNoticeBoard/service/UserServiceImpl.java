@@ -11,10 +11,14 @@ import org.springframework.stereotype.Service;
 
 import com.example.SmartNoticeBoard.DTO.AuthResponseDTO;
 import com.example.SmartNoticeBoard.DTO.UserDto;
+import com.example.SmartNoticeBoard.model.Department;
 import com.example.SmartNoticeBoard.model.Role;
 import com.example.SmartNoticeBoard.model.User;
+import com.example.SmartNoticeBoard.model.Year;
+import com.example.SmartNoticeBoard.repository.DepartmentRepository;
 import com.example.SmartNoticeBoard.repository.RoleRepository;
 import com.example.SmartNoticeBoard.repository.UserRepository;
+import com.example.SmartNoticeBoard.repository.YearRepository;
 import com.example.SmartNoticeBoard.security.JwtUtil;
 import com.example.SmartNoticeBoard.util.AESUtil;
 
@@ -26,6 +30,12 @@ public class UserServiceImpl implements UserService {
 
 	@Autowired
 	private RoleRepository roleRepository;
+	
+	@Autowired
+	private DepartmentRepository departmentRepository;
+	
+	@Autowired
+	private YearRepository yearRepository;
 
 	@Autowired
 	private PasswordEncoder passwordEncoder;
@@ -42,8 +52,8 @@ public class UserServiceImpl implements UserService {
 	    dto.setDateOfBirth(user.getDateOfBirth() != null ? user.getDateOfBirth().toString() : null);
 		dto.setGmail(user.getGmail());
 		dto.setRoles(user.getRoles());
-		dto.setDepartment(user.getDepartment());
-		dto.setYear(user.getYear());
+		dto.setDepartment(user.getDepartment() != null ? user.getDepartment().getName() : null);
+		dto.setYear(user.getYear() != null ? user.getYear().getYearNumber() : null);
 		dto.setFirstLogin(user.isFirstLogin());
 		return dto;
 	}
@@ -57,8 +67,22 @@ public class UserServiceImpl implements UserService {
 		user.setName(dto.getName());
 		user.setMobileNumber(dto.getMobileNumber());
 		user.setGmail(dto.getGmail());
-		user.setDepartment(dto.getDepartment());
-		user.setYear(dto.getYear());
+
+		if (dto.getDepartment() != null && !dto.getDepartment().isBlank()) {
+		    Department dept = departmentRepository.findByName(dto.getDepartment());
+		    if (dept == null) {
+		        throw new RuntimeException("Invalid department: " + dto.getDepartment());
+		    }
+		    user.setDepartment(dept);
+		}
+
+	    if (dto.getYear() != null) {
+	        Year yearLevel = yearRepository.findByYearNumber(dto.getYear());
+	        if (yearLevel == null) {
+	            throw new RuntimeException("Invalid year: " + dto.getYear());
+	        }
+	        user.setYear(yearLevel);
+	    }
 		
 	    if (dto.getDateOfBirth() != null) {
 	        user.setDateOfBirth(LocalDate.parse(dto.getDateOfBirth()));
@@ -168,8 +192,22 @@ public class UserServiceImpl implements UserService {
         existingUser.setName(userDto.getName());
         existingUser.setGmail(userDto.getGmail());
         existingUser.setMobileNumber(userDto.getMobileNumber());
-        existingUser.setDepartment(userDto.getDepartment());
-        existingUser.setYear(userDto.getYear());
+        // 🔹 Update Department (using Department entity)
+        if (userDto.getDepartment() != null && !userDto.getDepartment().isBlank()) {
+            Department dept = departmentRepository.findByName(userDto.getDepartment());
+            if (dept == null) {
+                dept = departmentRepository.save(new Department(userDto.getDepartment()));
+            }
+            existingUser.setDepartment(dept);
+        }
+        if (userDto.getYear() != null) {
+            Year yearLevel = yearRepository.findByYearNumber(userDto.getYear());
+            if (yearLevel == null) {
+                throw new RuntimeException("Invalid year: " + userDto.getYear());
+            }
+            existingUser.setYear(yearLevel);
+        }
+
         if (userDto.getDateOfBirth() != null) {
             existingUser.setDateOfBirth(LocalDate.parse(userDto.getDateOfBirth()));
         }
