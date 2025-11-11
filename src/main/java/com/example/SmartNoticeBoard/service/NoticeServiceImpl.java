@@ -273,7 +273,7 @@ public class NoticeServiceImpl implements NoticeService {
     }
 
     @Override
-    public List<NoticeDto> filterNoticesByUserAndYear(String postedBy, Integer year, Integer uploadedYear, String department) {
+    public List<NoticeDto> filterNotices(String postedBy, Integer year, Integer uploadedYear, String department) {
         return noticeRepository.findAll().stream()
                 .filter(n -> postedBy == null
                         || (n.getPostedBy() != null && n.getPostedBy().getUsername().equalsIgnoreCase(postedBy)))

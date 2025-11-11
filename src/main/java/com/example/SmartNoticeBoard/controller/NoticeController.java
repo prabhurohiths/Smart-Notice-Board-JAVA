@@ -98,12 +98,14 @@ public class NoticeController {
 		return noticeService.getNoticesForStudent(department, year);
 	}
 
-	@GetMapping("/filterByUserAndYear")
-	public List<NoticeDto> filterNoticesByUserAndYear(@RequestParam(required = false) String postedBy,
-			@RequestParam(required = false) Integer year, @RequestParam(required = false) Integer uploadedYear,
+	@GetMapping("/filterNotices")
+	public List<NoticeDto> filterNotices(
+			@RequestParam(required = false) String postedBy,
+			@RequestParam(required = false) Integer year,
+			@RequestParam(required = false) Integer uploadedYear,
 			@RequestParam(required = false) String department) {
 
-		return noticeService.filterNoticesByUserAndYear(postedBy, year, uploadedYear, department);
+		return noticeService.filterNotices(postedBy, year, uploadedYear, department);
 	}
 
 }

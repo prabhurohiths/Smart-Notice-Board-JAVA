@@ -21,6 +21,6 @@ public interface NoticeService {
     
     void deleteNoticeWithRoleCheck(Long id, Long userId);
 
-    List<NoticeDto> filterNoticesByUserAndYear(String postedBy, Integer year, Integer uploadedYear, String department);
+    List<NoticeDto> filterNotices(String postedBy, Integer year, Integer uploadedYear, String department);
 
 }
