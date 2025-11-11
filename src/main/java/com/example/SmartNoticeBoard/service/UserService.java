@@ -27,5 +27,8 @@ public interface UserService {
     UserDto getUserById(Long id);
     void updateUser(Long id, UserDto userDto);
     void deleteUser(Long id);
+    
+    boolean usernameExists(String username);
+
 }
 

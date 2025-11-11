@@ -95,5 +95,15 @@ public class UserController {
         response.put("message", "User deleted successfully");
         return ResponseEntity.ok(response);
     }
+    
+ // ✅ Check if username exists
+    @GetMapping("/checkUsername")
+    public ResponseEntity<Map<String, Boolean>> checkUsername(@RequestParam String username) {
+        boolean exists = userService.usernameExists(username);
+        Map<String, Boolean> response = new HashMap<>();
+        response.put("exists", exists);
+        return ResponseEntity.ok(response);
+    }
+
 
 }
