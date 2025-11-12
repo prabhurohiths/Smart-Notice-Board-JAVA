@@ -29,13 +29,17 @@ public class Notice {
 	private String imagePaths; // comma-separated paths
 	
 	@ManyToOne
-	@JoinColumn(name = "posted_by")
+	@JoinColumn(name = "posted_by", foreignKey = @ForeignKey(name = "FK_notice_posted_user"))
 	private User postedBy;
 	
 	private LocalDateTime postedDate = LocalDateTime.now();
 	
 	@ManyToOne
-	@JoinColumn(name = "modified_by")
+	@JoinColumn(
+	    name = "modified_by",
+	    foreignKey = @ForeignKey(name = "FK_notice_modified_user")
+	)
+	@org.hibernate.annotations.OnDelete(action = org.hibernate.annotations.OnDeleteAction.SET_NULL)
 	private User modifiedBy;
 
 	@Column(name = "modified_date")

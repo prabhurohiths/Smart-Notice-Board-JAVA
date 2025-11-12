@@ -49,6 +49,10 @@ public class User {
         inverseJoinColumns = @JoinColumn(name = "role_id")
     )
     private Set<Role> roles;
+    
+    @OneToMany(mappedBy = "postedBy", cascade = CascadeType.REMOVE)
+    private Set<Notice> postedNotices;
+
 
 	public Long getId() {
 		return id;
