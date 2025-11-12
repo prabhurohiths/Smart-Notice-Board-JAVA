@@ -1,6 +1,7 @@
 package com.example.SmartNoticeBoard.controller;
 
 import java.util.List;
+import java.util.Map;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.DeleteMapping;
@@ -53,7 +54,7 @@ public class NoticeController {
 	@DeleteMapping("/deleteNotice/{id}")
 	public List<NoticeDto> deleteNotice(@PathVariable Long id, @RequestParam Long userId) {
 		noticeService.deleteNoticeWithRoleCheck(id, userId);
-		return noticeService.getAllNotices();
+		return noticeService.getAllNoticess();
 	}
 
 	@GetMapping("/getNoticeById/{id}")
@@ -63,8 +64,33 @@ public class NoticeController {
 
 	// Admin-> View All Notices
 	@GetMapping("/getAllNotices")
-	public List<NoticeDto> getAllNotices() {
-		return noticeService.getAllNotices();
+	public Map<String, Object> getAllNotices(
+	        @RequestParam(defaultValue = "0") int page,
+	        @RequestParam(defaultValue = "6") int size) {
+	    return noticeService.getAllNotices(page, size);
+	}
+
+	@GetMapping("/getStudentNotices")
+	public Map<String, Object> getStudentNotices(
+	        @RequestParam String department,
+	        @RequestParam Integer year,
+	        @RequestParam(defaultValue = "0") int page,
+	        @RequestParam(defaultValue = "6") int size) {
+
+	    return noticeService.getNoticesForStudent(department, year, page, size);
+	}
+
+
+	@GetMapping("/filterNotices")
+	public Map<String, Object> filterNotices(
+	        @RequestParam(required = false) String postedBy,
+	        @RequestParam(required = false) Integer year,
+	        @RequestParam(required = false) Integer uploadedYear,
+	        @RequestParam(required = false) String department,
+	        @RequestParam(defaultValue = "0") int page,
+	        @RequestParam(defaultValue = "6") int size) {
+
+	    return noticeService.filterNotices(postedBy, year, uploadedYear, department, page, size);
 	}
 
 	// Admin/Teacher → Update Notice
@@ -91,21 +117,6 @@ public class NoticeController {
 		}
 
 		return noticeService.updateNoticeWithImages(id, noticeDto, files);
-	}
-
-	@GetMapping("/getStudentNotices")
-	public List<NoticeDto> getStudentNotices(@RequestParam String department, @RequestParam Integer year) {
-		return noticeService.getNoticesForStudent(department, year);
-	}
-
-	@GetMapping("/filterNotices")
-	public List<NoticeDto> filterNotices(
-			@RequestParam(required = false) String postedBy,
-			@RequestParam(required = false) Integer year,
-			@RequestParam(required = false) Integer uploadedYear,
-			@RequestParam(required = false) String department) {
-
-		return noticeService.filterNotices(postedBy, year, uploadedYear, department);
 	}
 
 }

@@ -1,6 +1,7 @@
 package com.example.SmartNoticeBoard.service;
 
 import java.util.List;
+import java.util.Map;
 
 import com.example.SmartNoticeBoard.DTO.AuthResponseDTO;
 import com.example.SmartNoticeBoard.DTO.UserDto;
@@ -23,7 +24,8 @@ public interface UserService {
     
     
     
-    List<UserDto> getAllUsers();
+    Map<String, Object> getAllUsers(int page, int size);
+
     UserDto getUserById(Long id);
     void updateUser(Long id, UserDto userDto);
     void deleteUser(Long id);

@@ -1,11 +1,17 @@
 package com.example.SmartNoticeBoard.service;
 
 import java.time.LocalDate;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
@@ -42,7 +48,7 @@ public class UserServiceImpl implements UserService {
 
 	private final JwtUtil jwtUtil = new JwtUtil();
 
-	// ✅ Convert Entity → DTO
+	// Convert Entity → DTO
 	private UserDto mapToDto(User user) {
 		UserDto dto = new UserDto();
 		dto.setId(user.getId());
@@ -58,44 +64,55 @@ public class UserServiceImpl implements UserService {
 		return dto;
 	}
 
-	// ✅ Convert DTO → Entity
+	// Convert DTO → Entity
 	private User mapToEntity(UserDto dto) {
-		User user = new User();
-		user.setId(dto.getId());
-		user.setUsername(dto.getUsername());
-		user.setPassword(dto.getPassword()); // stored as plain/hased
-		user.setName(dto.getName());
-		user.setMobileNumber(dto.getMobileNumber());
-		user.setGmail(dto.getGmail());
+	    User user = new User();
+	    user.setId(dto.getId());
+	    user.setUsername(dto.getUsername());
+	    user.setPassword(dto.getPassword()); 
+	    user.setName(dto.getName());
+	    user.setMobileNumber(dto.getMobileNumber());
+	    user.setGmail(dto.getGmail());
 
-		if (dto.getDepartment() != null && !dto.getDepartment().isBlank()) {
-		    Department dept = departmentRepository.findByName(dto.getDepartment());
-		    if (dept == null) {
-		        throw new RuntimeException("Invalid department: " + dto.getDepartment());
-		    }
-		    user.setDepartment(dept);
-		}
+	    // Handle Role Conversion
+	    Set<Role> roles = dto.getRoles().stream()
+	            .map(r -> roleRepository.findByName(r.getName()))
+	            .collect(Collectors.toSet());
+	    user.setRoles(roles);
 
-	    if (dto.getYear() != null) {
+	    // Check if user is ADMIN or TEACHER
+	    boolean isAdminOrTeacher = roles.stream()
+	            .anyMatch(r -> r.getName().equalsIgnoreCase("ADMIN") || r.getName().equalsIgnoreCase("TEACHER"));
+
+	    // Department – only for STUDENT
+	    if (!isAdminOrTeacher && dto.getDepartment() != null && !dto.getDepartment().isBlank()) {
+	        Department dept = departmentRepository.findByName(dto.getDepartment());
+	        if (dept == null) {
+	            throw new RuntimeException("Invalid department: " + dto.getDepartment());
+	        }
+	        user.setDepartment(dept);
+	    } else {
+	        user.setDepartment(null);
+	    }
+
+	    // Year – only for STUDENT
+	    if (!isAdminOrTeacher && dto.getYear() != null) {
 	        Year yearLevel = yearRepository.findByYearNumber(dto.getYear());
 	        if (yearLevel == null) {
 	            throw new RuntimeException("Invalid year: " + dto.getYear());
 	        }
 	        user.setYear(yearLevel);
+	    } else {
+	        user.setYear(null);
 	    }
-		
+
 	    if (dto.getDateOfBirth() != null) {
 	        user.setDateOfBirth(LocalDate.parse(dto.getDateOfBirth()));
 	    }
 
-		if (dto.getRoles() != null) {
-			Set<Role> roles = dto.getRoles().stream()
-					.map(r -> roleRepository.findByName(r.getName()))
-					.collect(Collectors.toSet());
-			user.setRoles(roles);
-		}
-		return user;
+	    return user;
 	}
+
 
 	@Override
 	public UserDto register(UserDto userDto) {
@@ -171,9 +188,21 @@ public class UserServiceImpl implements UserService {
     
     
     @Override
-    public List<UserDto> getAllUsers() {
-        List<User> users = userRepository.findAll();
-        return users.stream().map(this::mapToDto).collect(Collectors.toList());
+    public Map<String, Object> getAllUsers(int page, int size) {
+        Pageable pageable = PageRequest.of(page, size, Sort.by("id").descending());
+        Page<User> userPage = userRepository.findAll(pageable);
+
+        List<UserDto> userDtos = userPage.getContent()
+                .stream()
+                .map(this::mapToDto)
+                .collect(Collectors.toList());
+
+        Map<String, Object> response = new HashMap<>();
+        response.put("users", userDtos);
+        response.put("currentPage", userPage.getNumber());
+        response.put("totalItems", userPage.getTotalElements());
+        response.put("totalPages", userPage.getTotalPages());
+        return response;
     }
 
     @Override
@@ -188,40 +217,61 @@ public class UserServiceImpl implements UserService {
         User existingUser = userRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("User not found with ID: " + id));
 
-        // Update editable fields
+        // Update basic editable fields
         existingUser.setName(userDto.getName());
         existingUser.setGmail(userDto.getGmail());
         existingUser.setMobileNumber(userDto.getMobileNumber());
-        // 🔹 Update Department (using Department entity)
-        if (userDto.getDepartment() != null && !userDto.getDepartment().isBlank()) {
-            Department dept = departmentRepository.findByName(userDto.getDepartment());
-            if (dept == null) {
-                dept = departmentRepository.save(new Department(userDto.getDepartment()));
-            }
-            existingUser.setDepartment(dept);
-        }
-        if (userDto.getYear() != null) {
-            Year yearLevel = yearRepository.findByYearNumber(userDto.getYear());
-            if (yearLevel == null) {
-                throw new RuntimeException("Invalid year: " + userDto.getYear());
-            }
-            existingUser.setYear(yearLevel);
-        }
 
+        // Update date of birth if present
         if (userDto.getDateOfBirth() != null) {
             existingUser.setDateOfBirth(LocalDate.parse(userDto.getDateOfBirth()));
         }
 
         // Update roles if provided
+        Set<Role> roles = existingUser.getRoles(); // default existing roles
         if (userDto.getRoles() != null && !userDto.getRoles().isEmpty()) {
-            Set<Role> roles = userDto.getRoles().stream()
+            roles = userDto.getRoles().stream()
                     .map(r -> roleRepository.findByName(r.getName()))
                     .collect(Collectors.toSet());
             existingUser.setRoles(roles);
         }
 
+        // Check if user is ADMIN or TEACHER
+        boolean isAdminOrTeacher = roles.stream()
+                .anyMatch(r -> r.getName().equalsIgnoreCase("ADMIN") || r.getName().equalsIgnoreCase("TEACHER"));
+
+        if (isAdminOrTeacher) {
+            // For Admin or Teacher → clear department and year
+            existingUser.setDepartment(null);
+            existingUser.setYear(null);
+        } else {
+            // For Student → update department and year normally
+            // Department
+            if (userDto.getDepartment() != null && !userDto.getDepartment().isBlank()) {
+                Department dept = departmentRepository.findByName(userDto.getDepartment());
+                if (dept == null) {
+                    dept = departmentRepository.save(new Department(userDto.getDepartment()));
+                }
+                existingUser.setDepartment(dept);
+            } else {
+                existingUser.setDepartment(null);
+            }
+
+            // Year
+            if (userDto.getYear() != null) {
+                Year yearLevel = yearRepository.findByYearNumber(userDto.getYear());
+                if (yearLevel == null) {
+                    throw new RuntimeException("Invalid year: " + userDto.getYear());
+                }
+                existingUser.setYear(yearLevel);
+            } else {
+                existingUser.setYear(null);
+            }
+        }
+
         userRepository.save(existingUser);
     }
+
 
     @Override
     public void deleteUser(Long id) {

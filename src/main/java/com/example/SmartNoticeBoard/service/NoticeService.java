@@ -3,6 +3,7 @@ package com.example.SmartNoticeBoard.service;
 
 import com.example.SmartNoticeBoard.DTO.NoticeDto;
 import java.util.List;
+import java.util.Map;
 
 import org.springframework.web.multipart.MultipartFile;
 
@@ -12,15 +13,17 @@ public interface NoticeService {
     void deleteNotice(Long id);
     
     NoticeDto getNoticeById(Long id);
+    
+    List<NoticeDto> getAllNoticess();
 
-    List<NoticeDto> getAllNotices();
+    Map<String, Object> getAllNotices(int page, int size);
+    
+    Map<String, Object> getNoticesForStudent(String department, Integer year, int page, int size);
+
+    Map<String, Object> filterNotices(String postedBy, Integer year, Integer uploadedYear, String department, int page, int size);
     
     NoticeDto updateNoticeWithImages(Long id, NoticeDto noticeDto, List<MultipartFile> files);
-
-    List<NoticeDto> getNoticesForStudent(String department, Integer year);
     
     void deleteNoticeWithRoleCheck(Long id, Long userId);
-
-    List<NoticeDto> filterNotices(String postedBy, Integer year, Integer uploadedYear, String department);
 
 }

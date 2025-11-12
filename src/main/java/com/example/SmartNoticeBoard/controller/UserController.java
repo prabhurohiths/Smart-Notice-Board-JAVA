@@ -68,8 +68,10 @@ public class UserController {
     
  // ✅ Get all users
     @GetMapping("/getAllUsers")
-    public List<UserDto> getAllUsers() {
-        return userService.getAllUsers();
+    public Map<String, Object> getAllUsers(
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "6") int size) {
+        return userService.getAllUsers(page, size);
     }
 
     // ✅ Get user by ID
