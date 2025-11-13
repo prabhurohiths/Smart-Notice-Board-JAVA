@@ -263,25 +263,24 @@ public class NoticeServiceImpl implements NoticeService {
     @Override
     public Map<String, Object> filterNotices(String postedBy, Integer year, Integer uploadedYear, String department, int page, int size) {
         Pageable pageable = PageRequest.of(page, size, Sort.by("postedDate").descending());
-        Page<Notice> noticePage = noticeRepository.findAll(pageable); // start with all, filter later
-
-        // filter manually for simplicity
-        List<NoticeDto> filtered = noticePage.getContent().stream()
-                .filter(n -> postedBy == null || (n.getPostedBy() != null && n.getPostedBy().getUsername().equalsIgnoreCase(postedBy)))
-                .filter(n -> year == null || (n.getYear() != null && n.getYear().getYearNumber().equals(year)))
-                .filter(n -> uploadedYear == null || (n.getPostedDate() != null && n.getPostedDate().getYear() == uploadedYear))
-                .filter(n -> department == null || department.equalsIgnoreCase("ALL")
-                        || (n.getDepartment() != null && n.getDepartment().getName().equalsIgnoreCase(department)))
+        
+        Page<Notice> noticePage = noticeRepository.filterNoticesFromDb(postedBy, year, uploadedYear, department, pageable);
+        
+        List<NoticeDto> notices = noticePage.getContent()
+                .stream()
                 .map(this::mapToDto)
                 .collect(Collectors.toList());
-
+        
         Map<String, Object> response = new HashMap<>();
-        response.put("notices", filtered);
+        response.put("notices", notices);
         response.put("currentPage", noticePage.getNumber());
-        response.put("totalItems", noticeRepository.count());
+        response.put("totalItems", noticePage.getTotalElements());
         response.put("totalPages", noticePage.getTotalPages());
+        
         return response;
     }
+
+
 
     @Override
     public Map<String, Object> getNoticesForStudent(String department, Integer year, int page, int size) {
