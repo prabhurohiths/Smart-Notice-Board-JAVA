@@ -22,6 +22,8 @@ public interface NoticeService {
 
     Map<String, Object> filterNotices(String postedBy, Integer year, Integer uploadedYear, String department, int page, int size);
     
+    Map<String, Object> studentFilterNotices(String postedBy, Integer uploadedYear, String department, Integer year, int page, int size);
+
     NoticeDto updateNoticeWithImages(Long id, NoticeDto noticeDto, List<MultipartFile> files);
     
     void deleteNoticeWithRoleCheck(Long id, Long userId);

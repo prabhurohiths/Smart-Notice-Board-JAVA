@@ -92,6 +92,19 @@ public class NoticeController {
 
 	    return noticeService.filterNotices(postedBy, year, uploadedYear, department, page, size);
 	}
+	
+	@GetMapping("/studentFilterNotices")
+	public Map<String, Object> studentFilterNotices(
+	        @RequestParam(required = false) String postedBy,
+	        @RequestParam(required = false) Integer uploadedYear,
+	        @RequestParam String department,
+	        @RequestParam Integer year,
+	        @RequestParam(defaultValue = "0") int page,
+	        @RequestParam(defaultValue = "6") int size) {
+
+	    return noticeService.studentFilterNotices(postedBy, uploadedYear, department, year, page, size);
+	}
+
 
 	// Admin/Teacher → Update Notice
 	@PutMapping("/updateNoticeWithImages/{id}")

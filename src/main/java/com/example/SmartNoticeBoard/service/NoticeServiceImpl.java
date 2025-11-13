@@ -280,27 +280,48 @@ public class NoticeServiceImpl implements NoticeService {
         return response;
     }
 
+    @Override
+    public Map<String, Object> studentFilterNotices(String postedBy, Integer uploadedYear, String department, Integer year, int page, int size) {
+        Pageable pageable = PageRequest.of(page, size, Sort.by("postedDate").descending());
+        Page<Notice> noticePage = noticeRepository.studentFilterNotices(postedBy, uploadedYear, department, year, pageable);
+
+        List<NoticeDto> notices = noticePage.getContent()
+                .stream()
+                .map(this::mapToDto)
+                .collect(Collectors.toList());
+
+        Map<String, Object> response = new HashMap<>();
+        response.put("notices", notices);
+        response.put("currentPage", noticePage.getNumber());
+        response.put("totalItems", noticePage.getTotalElements());
+        response.put("totalPages", noticePage.getTotalPages());
+        return response;
+    }
+
+
+
 
 
     @Override
     public Map<String, Object> getNoticesForStudent(String department, Integer year, int page, int size) {
         Pageable pageable = PageRequest.of(page, size, Sort.by("postedDate").descending());
-        Page<Notice> noticePage = noticeRepository.findAll(pageable);
 
-        // Filter by department & year
-        List<NoticeDto> filtered = noticePage.getContent().stream()
-                .filter(n -> n.getDepartment() != null && n.getDepartment().getName().equalsIgnoreCase(department))
-                .filter(n -> n.getYear() != null && n.getYear().getYearNumber().equals(year))
+        // ✅ Fetch department = student's + ALL, year = student's + ALL
+        Page<Notice> noticePage = noticeRepository.findStudentNotices(department, year, pageable);
+
+        List<NoticeDto> notices = noticePage.getContent()
+                .stream()
                 .map(this::mapToDto)
                 .collect(Collectors.toList());
 
         Map<String, Object> response = new HashMap<>();
-        response.put("notices", filtered);
+        response.put("notices", notices);
         response.put("currentPage", noticePage.getNumber());
-        response.put("totalItems", noticeRepository.count());
+        response.put("totalItems", noticePage.getTotalElements());
         response.put("totalPages", noticePage.getTotalPages());
         return response;
     }
+
 
     @Override
     public void deleteNotice(Long id) {
