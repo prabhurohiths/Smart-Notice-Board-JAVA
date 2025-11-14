@@ -44,7 +44,7 @@ public class NoticeServiceImpl implements NoticeService {
     @Value("${notice.image.base-path}")
     private String baseDir;
 
-    // ✅ Map Entity → DTO
+    // Map Entity → DTO
     private NoticeDto mapToDto(Notice notice) {
         NoticeDto dto = new NoticeDto();
         dto.setId(notice.getId());
@@ -84,14 +84,14 @@ public class NoticeServiceImpl implements NoticeService {
         return dto;
     }
 
-    // ✅ Map DTO → Entity
+    // Map DTO → Entity
     private Notice mapToEntity(NoticeDto dto) {
         Notice notice = new Notice();
         notice.setId(dto.getId());
         notice.setTitle(dto.getTitle());
         notice.setDescription(dto.getDescription());
 
-        // 🔹 Department validation — must exist, not auto-create
+        // Department validation — must exist, not auto-create
         if (dto.getDepartment() != null && !dto.getDepartment().isBlank()) {
             Department dept = departmentRepository.findByName(dto.getDepartment());
             if (dept == null) {
@@ -100,7 +100,7 @@ public class NoticeServiceImpl implements NoticeService {
             notice.setDepartment(dept);
         }
 
-        // 🔹 Year mapping using Year
+        // Year mapping using Year
         if (dto.getYear() != null) {
             Year Year = YearRepository.findByYearNumber(dto.getYear());
             if (Year == null) {
@@ -116,7 +116,7 @@ public class NoticeServiceImpl implements NoticeService {
         return notice;
     }
 
-    // ✅ Save multiple uploaded files
+    // Save multiple uploaded files
     private List<String> saveFiles(List<MultipartFile> files) {
         List<String> fileNames = new ArrayList<>();
         File dir = new File(baseDir);
@@ -136,7 +136,7 @@ public class NoticeServiceImpl implements NoticeService {
         return fileNames;
     }
 
-    // ✅ Create Notice
+    // Create Notice
     @Override
     public NoticeDto createNotice(NoticeDto noticeDto, Long postedById, List<MultipartFile> images) {
         User user = userRepository.findById(postedById)
@@ -155,7 +155,7 @@ public class NoticeServiceImpl implements NoticeService {
         return mapToDto(saved);
     }
 
-    // ✅ Update Notice with Image Replacement
+    // Update Notice with Image Replacement
     @Override
     public NoticeDto updateNoticeWithImages(Long id, NoticeDto noticeDto, List<MultipartFile> files) {
         Notice existing = noticeRepository.findById(id)
@@ -165,7 +165,7 @@ public class NoticeServiceImpl implements NoticeService {
         existing.setDescription(noticeDto.getDescription());
         existing.setModifiedDate(LocalDateTime.now());
 
-        // 🔹 Department validation — must exist
+        // Department validation — must exist
         if (noticeDto.getDepartment() != null && !noticeDto.getDepartment().isBlank()) {
             Department dept = departmentRepository.findByName(noticeDto.getDepartment());
             if (dept == null) {
@@ -174,7 +174,7 @@ public class NoticeServiceImpl implements NoticeService {
             existing.setDepartment(dept);
         }
 
-        // 🔹 Year validation — must exist
+        // Year validation — must exist
         if (noticeDto.getYear() != null) {
             Year Year = YearRepository.findByYearNumber(noticeDto.getYear());
             if (Year == null) {
@@ -183,14 +183,14 @@ public class NoticeServiceImpl implements NoticeService {
             existing.setYear(Year);
         }
 
-        // 🔹 Modified By user
+        // Modified By user
         User user = userRepository.findByUsername(noticeDto.getModifiedBy());
         if (user == null) {
             throw new RuntimeException("User not found for username: " + noticeDto.getModifiedBy());
         }
         existing.setModifiedBy(user);
 
-        // 🧩 Manage image file updates
+        // Manage image file updates
         List<String> existingFiles = new ArrayList<>();
         if (existing.getImagePaths() != null && !existing.getImagePaths().isEmpty()) {
             existingFiles = Arrays.stream(existing.getImagePaths().split(","))
@@ -306,7 +306,7 @@ public class NoticeServiceImpl implements NoticeService {
     public Map<String, Object> getNoticesForStudent(String department, Integer year, int page, int size) {
         Pageable pageable = PageRequest.of(page, size, Sort.by("postedDate").descending());
 
-        // ✅ Fetch department = student's + ALL, year = student's + ALL
+        // Fetch department = student's + ALL, year = student's + ALL
         Page<Notice> noticePage = noticeRepository.findStudentNotices(department, year, pageable);
 
         List<NoticeDto> notices = noticePage.getContent()

@@ -55,18 +55,14 @@ public class UserController {
 	    return ResponseEntity.ok(response);
 	}
 	
-    // ✅ Get all Admin and Teacher users
+    // Get all Admin and Teacher users
     @GetMapping("/getAllTeachersAndAdmins")
     public List<UserDto> getAllTeachersAndAdmins() {
         return userService.getAllTeachersAndAdmins();
     }
+     
     
-    
-    
-    
-    
-    
- // ✅ Get all users
+    // Get all users
     @GetMapping("/getAllUsers")
     public Map<String, Object> getAllUsers(
             @RequestParam(defaultValue = "0") int page,
@@ -74,13 +70,13 @@ public class UserController {
         return userService.getAllUsers(page, size);
     }
 
-    // ✅ Get user by ID
+    // Get user by ID
     @GetMapping("/getUserById/{id}")
     public UserDto getUserById(@PathVariable Long id) {
         return userService.getUserById(id);
     }
 
-    // ✅ Update user
+    // Update user
     @PutMapping("/updateUser/{id}")
     public ResponseEntity<Map<String, String>> updateUser(@PathVariable Long id, @RequestBody UserDto userDto) {
         userService.updateUser(id, userDto);
@@ -89,7 +85,7 @@ public class UserController {
         return ResponseEntity.ok(response);
     }
 
-    // ✅ Delete user
+    // Delete user
     @DeleteMapping("/delete/{id}")
     public ResponseEntity<Map<String, String>> deleteUser(@PathVariable Long id) {
         userService.deleteUser(id);
@@ -98,7 +94,7 @@ public class UserController {
         return ResponseEntity.ok(response);
     }
     
- // ✅ Check if username exists
+ // Check if username exists
     @GetMapping("/checkUsername")
     public ResponseEntity<Map<String, Boolean>> checkUsername(@RequestParam String username) {
         boolean exists = userService.usernameExists(username);

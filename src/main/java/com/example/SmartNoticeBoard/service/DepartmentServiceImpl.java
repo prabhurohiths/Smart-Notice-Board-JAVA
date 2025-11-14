@@ -22,7 +22,7 @@ public class DepartmentServiceImpl implements DepartmentService {
 		return departments.stream().map(this::mapToDto).collect(Collectors.toList());
 	}
 
-	// ✅ Convert Entity → DTO
+	// Convert Entity → DTO
 	private DepartmentDTO mapToDto(Department department) {
 		DepartmentDTO dto = new DepartmentDTO();
 		dto.setId(department.getId());

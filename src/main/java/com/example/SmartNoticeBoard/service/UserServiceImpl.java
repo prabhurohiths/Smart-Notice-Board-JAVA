@@ -120,13 +120,13 @@ public class UserServiceImpl implements UserService {
 	        throw new RuntimeException("User already exists");
 	    }
 
-	    // 1️⃣ Decrypt AES password from frontend
+	    // Decrypt AES password from frontend
 	    String decryptedPassword = AESUtil.decrypt(userDto.getPassword());
 
-	    // 2️⃣ Hash with BCrypt
+	    // Hash with BCrypt
 	    String hashedPassword = passwordEncoder.encode(decryptedPassword);
 
-	    // 3️⃣ Map and save
+	    // Map and save
 	    User user = mapToEntity(userDto);
 	    user.setPassword(hashedPassword); // store hashed password
 	    user.setFirstLogin(true); // mark as first login if you need that
