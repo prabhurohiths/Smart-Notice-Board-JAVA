@@ -26,6 +26,8 @@ public interface NoticeRepository extends JpaRepository<Notice, Long> {
 		            n.year.yearNumber = :year
 		            OR n.year.yearNumber = 0
 		        )
+		        AND 
+		        ( n.expiryDate IS NULL OR n.expiryDate >= CURRENT_DATE )
 		    ORDER BY n.postedDate DESC
 		""")
 		Page<Notice> findStudentNotices(
@@ -62,6 +64,8 @@ public interface NoticeRepository extends JpaRepository<Notice, Long> {
 		            n.year.yearNumber = :year
 		            OR n.year.yearNumber = 0
 		        )
+		        AND
+		        ( n.expiryDate IS NULL OR n.expiryDate >= CURRENT_DATE )
 		        AND
 		        (:postedBy IS NULL OR LOWER(n.postedBy.username) = LOWER(:postedBy))
 		        AND

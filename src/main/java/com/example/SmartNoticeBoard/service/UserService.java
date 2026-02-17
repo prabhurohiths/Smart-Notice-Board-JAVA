@@ -8,29 +8,31 @@ import com.example.SmartNoticeBoard.DTO.UserDto;
 
 public interface UserService {
 
-    // Generate JWT token (separate API)
-    AuthResponseDTO generateToken(String username, String password);
+	// Generate JWT token (separate API)
+	AuthResponseDTO generateToken(String username, String password);
 
-    // Register new user
-    UserDto register(UserDto userDto);
+	// Register new user
+	UserDto register(UserDto userDto);
 
-    // Login user (returns user info)
-    UserDto login(String username, String password);
-    
-    void resetPassword(String username, String newPassword);
-    
-    List<UserDto> getAllTeachersAndAdmins();
-    
-    
-    
-    
-    Map<String, Object> getAllUsers(int page, int size);
+	AuthResponseDTO refreshAccessToken(String refreshToken);
 
-    UserDto getUserById(Long id);
-    void updateUser(Long id, UserDto userDto);
-    void deleteUser(Long id);
-    
-    boolean usernameExists(String username);
+	// Login user (returns user info)
+	UserDto login(String username, String password);
+
+	void resetPassword(String username, String newPassword);
+
+	List<UserDto> getAllTeachersAndAdmins();
+
+	Map<String, Object> getAllUsers(int page, int size);
+
+	UserDto getUserById(Long id);
+
+	void updateUser(Long id, UserDto userDto);
+
+	void deleteUser(Long id);
+
+	boolean usernameExists(String username);
+
+	void updateStatus(Long id, boolean active);
 
 }
-

@@ -39,6 +39,9 @@ public class User {
     @Column(name = "gmail")
     private String gmail;
     
+    @Column(name = "active")
+    private boolean active = true;
+    
     @Column(name = "first_login")
     private boolean firstLogin = true; // true means user must reset password
 
@@ -132,6 +135,14 @@ public class User {
 
 	public void setGmail(String gmail) {
 		this.gmail = gmail;
+	}
+	
+	public boolean isActive() {
+	    return active;
+	}
+
+	public void setActive(boolean active) {
+	    this.active = active;
 	}
 	
     public boolean isFirstLogin() {

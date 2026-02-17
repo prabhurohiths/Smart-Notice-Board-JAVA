@@ -1,44 +1,52 @@
 package com.example.SmartNoticeBoard.model;
 
-import jakarta.persistence.*;
+import java.time.LocalDate;
 import java.time.LocalDateTime;
+
+import jakarta.persistence.Column;
+import jakarta.persistence.Entity;
+import jakarta.persistence.ForeignKey;
+import jakarta.persistence.GeneratedValue;
+import jakarta.persistence.GenerationType;
+import jakarta.persistence.Id;
+import jakarta.persistence.JoinColumn;
+import jakarta.persistence.ManyToOne;
+import jakarta.persistence.Table;
 
 @Entity
 @Table(name = "notices")
 public class Notice {
-	
+
 	@Id
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
 	private Long id;
-	
+
 	private String title;
-	
+
 	private String description;
-	
+
 	@ManyToOne
 	@JoinColumn(name = "department_id")
 	private Department department;
 
-	
 	@ManyToOne
 	@JoinColumn(name = "year_id")
 	private Year year;
 
-	
 	@Column(length = 2000)
 	private String imagePaths; // comma-separated paths
-	
+
 	@ManyToOne
 	@JoinColumn(name = "posted_by", foreignKey = @ForeignKey(name = "FK_notice_posted_user"))
 	private User postedBy;
-	
+
 	private LocalDateTime postedDate = LocalDateTime.now();
-	
+
+	@Column(name = "expiry_date")
+	private LocalDate expiryDate;
+
 	@ManyToOne
-	@JoinColumn(
-	    name = "modified_by",
-	    foreignKey = @ForeignKey(name = "FK_notice_modified_user")
-	)
+	@JoinColumn(name = "modified_by", foreignKey = @ForeignKey(name = "FK_notice_modified_user"))
 	@org.hibernate.annotations.OnDelete(action = org.hibernate.annotations.OnDeleteAction.SET_NULL)
 	private User modifiedBy;
 
@@ -107,6 +115,14 @@ public class Notice {
 
 	public void setPostedDate(LocalDateTime postedDate) {
 		this.postedDate = postedDate;
+	}
+
+	public LocalDate getExpiryDate() {
+		return expiryDate;
+	}
+
+	public void setExpiryDate(LocalDate expiryDate) {
+		this.expiryDate = expiryDate;
 	}
 
 	public User getModifiedBy() {

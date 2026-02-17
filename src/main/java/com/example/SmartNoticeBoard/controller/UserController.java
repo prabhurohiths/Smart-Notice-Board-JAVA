@@ -36,9 +36,14 @@ public class UserController {
 
 	@PostMapping("/token")
 	public AuthResponseDTO token(@RequestParam String username, @RequestParam String password) {
-		PasswordHashGenerator.generatePassword();
 		AuthResponseDTO authResponseDTO = userService.generateToken(username, password);
 		return authResponseDTO;
+	}
+
+	@PostMapping("/refreshAccessToken")
+	public ResponseEntity<AuthResponseDTO> refreshAccessToken(@RequestBody Map<String, String> body) {
+		String refreshToken = body.get("refreshToken");
+		return ResponseEntity.ok(userService.refreshAccessToken(refreshToken));
 	}
 
 	// All → Login
@@ -46,62 +51,72 @@ public class UserController {
 	public UserDto login(@RequestBody UserDto userDto) {
 		return userService.login(userDto.getUsername(), userDto.getPassword());
 	}
-	
+
 	@PostMapping("/resetPassword")
-	public ResponseEntity<Map<String, String>> resetPassword(@RequestParam String username, @RequestParam String newPassword) {
-	    userService.resetPassword(username, newPassword);
-	    Map<String, String> response = new HashMap<>();
-	    response.put("message", "Password updated successfully");
-	    return ResponseEntity.ok(response);
+	public ResponseEntity<Map<String, String>> resetPassword(@RequestParam String username,
+			@RequestParam String newPassword) {
+		userService.resetPassword(username, newPassword);
+		Map<String, String> response = new HashMap<>();
+		response.put("message", "Password updated successfully");
+		return ResponseEntity.ok(response);
 	}
-	
-    // Get all Admin and Teacher users
-    @GetMapping("/getAllTeachersAndAdmins")
-    public List<UserDto> getAllTeachersAndAdmins() {
-        return userService.getAllTeachersAndAdmins();
-    }
-     
-    
-    // Get all users
-    @GetMapping("/getAllUsers")
-    public Map<String, Object> getAllUsers(
-            @RequestParam(defaultValue = "0") int page,
-            @RequestParam(defaultValue = "6") int size) {
-        return userService.getAllUsers(page, size);
-    }
 
-    // Get user by ID
-    @GetMapping("/getUserById/{id}")
-    public UserDto getUserById(@PathVariable Long id) {
-        return userService.getUserById(id);
-    }
+	// Get all Admin and Teacher users
+	@GetMapping("/getAllTeachersAndAdmins")
+	public List<UserDto> getAllTeachersAndAdmins() {
+		return userService.getAllTeachersAndAdmins();
+	}
 
-    // Update user
-    @PutMapping("/updateUser/{id}")
-    public ResponseEntity<Map<String, String>> updateUser(@PathVariable Long id, @RequestBody UserDto userDto) {
-        userService.updateUser(id, userDto);
-        Map<String, String> response = new HashMap<>();
-        response.put("message", "User updated successfully");
-        return ResponseEntity.ok(response);
-    }
+	// Get all users
+	@GetMapping("/getAllUsers")
+	public Map<String, Object> getAllUsers(@RequestParam(defaultValue = "0") int page,
+			@RequestParam(defaultValue = "6") int size) {
+		return userService.getAllUsers(page, size);
+	}
 
-    // Delete user
-    @DeleteMapping("/delete/{id}")
-    public ResponseEntity<Map<String, String>> deleteUser(@PathVariable Long id) {
-        userService.deleteUser(id);
-        Map<String, String> response = new HashMap<>();
-        response.put("message", "User deleted successfully");
-        return ResponseEntity.ok(response);
-    }
-    
- // Check if username exists
-    @GetMapping("/checkUsername")
-    public ResponseEntity<Map<String, Boolean>> checkUsername(@RequestParam String username) {
-        boolean exists = userService.usernameExists(username);
-        Map<String, Boolean> response = new HashMap<>();
-        response.put("exists", exists);
-        return ResponseEntity.ok(response);
-    }
+	// Get user by ID
+	@GetMapping("/getUserById/{id}")
+	public UserDto getUserById(@PathVariable Long id) {
+		return userService.getUserById(id);
+	}
 
+	// Update user
+	@PutMapping("/updateUser/{id}")
+	public ResponseEntity<Map<String, String>> updateUser(@PathVariable Long id, @RequestBody UserDto userDto) {
+		userService.updateUser(id, userDto);
+		Map<String, String> response = new HashMap<>();
+		response.put("message", "User updated successfully");
+		return ResponseEntity.ok(response);
+	}
+
+	// Delete user
+	@DeleteMapping("/delete/{id}")
+	public ResponseEntity<Map<String, String>> deleteUser(@PathVariable Long id) {
+		userService.deleteUser(id);
+		Map<String, String> response = new HashMap<>();
+		response.put("message", "User deleted successfully");
+		return ResponseEntity.ok(response);
+	}
+
+	// Check if username exists
+	@GetMapping("/checkUsername")
+	public ResponseEntity<Map<String, Boolean>> checkUsername(@RequestParam String username) {
+		boolean exists = userService.usernameExists(username);
+		Map<String, Boolean> response = new HashMap<>();
+		response.put("exists", exists);
+		return ResponseEntity.ok(response);
+	}
+
+	@PutMapping("/updateStatus/{id}")
+	public ResponseEntity<Map<String, String>> updateStatus(@PathVariable Long id,
+			@RequestBody Map<String, Boolean> request) {
+		boolean active = request.get("active");
+		userService.updateStatus(id, active);
+
+		Map<String, String> response = new HashMap<>();
+		response.put("message", "Status updated successfully");
+
+		return ResponseEntity.ok(response);
+	}
 
 }

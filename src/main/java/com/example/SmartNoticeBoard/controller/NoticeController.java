@@ -38,11 +38,12 @@ public class NoticeController {
 
 	// Admin/Teacher → Create Notice
 	@PostMapping(value = "/createNotice", consumes = { "multipart/form-data" })
-	public NoticeDto createNotice(@RequestPart("notice") NoticeDto noticeDto,
-			@RequestPart(value = "images", required = false) List<MultipartFile> images,
-			@RequestParam Long postedById) {
+	public NoticeDto createNotice(
+	        @RequestPart("notice") NoticeDto noticeDto,
+	        @RequestPart(value = "files", required = false) List<MultipartFile> files,
+	        @RequestParam Long postedById) {
 
-		return noticeService.createNotice(noticeDto, postedById, images);
+	    return noticeService.createNotice(noticeDto, postedById, files);
 	}
 
 	// Admin → Delete Notice
@@ -105,7 +106,6 @@ public class NoticeController {
 	    return noticeService.studentFilterNotices(postedBy, uploadedYear, department, year, page, size);
 	}
 
-
 	// Admin/Teacher → Update Notice
 	@PutMapping("/updateNoticeWithImages/{id}")
 	public NoticeDto updateNoticeWithImages(@PathVariable Long id, @RequestPart("notice") NoticeDto noticeDto,
@@ -113,7 +113,7 @@ public class NoticeController {
 
 			HttpServletRequest request) {
 
-		// ✅ Extract username from JWT
+		// Extract username from JWT
 		String authHeader = request.getHeader("Authorization");
 		String username = null;
 
@@ -121,7 +121,7 @@ public class NoticeController {
 			username = jwtUtil.extractUsername(authHeader.substring(7));
 		}
 
-		// ✅ Get user details from DB
+		// Get user details from DB
 		if (username != null) {
 			User user = userRepository.findByUsername(username);
 			if (user != null) {

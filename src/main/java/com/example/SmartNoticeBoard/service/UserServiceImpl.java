@@ -36,10 +36,10 @@ public class UserServiceImpl implements UserService {
 
 	@Autowired
 	private RoleRepository roleRepository;
-	
+
 	@Autowired
 	private DepartmentRepository departmentRepository;
-	
+
 	@Autowired
 	private YearRepository yearRepository;
 
@@ -55,236 +55,257 @@ public class UserServiceImpl implements UserService {
 		dto.setUsername(user.getUsername());
 		dto.setName(user.getName());
 		dto.setMobileNumber(user.getMobileNumber());
-	    dto.setDateOfBirth(user.getDateOfBirth() != null ? user.getDateOfBirth().toString() : null);
+		dto.setDateOfBirth(user.getDateOfBirth() != null ? user.getDateOfBirth().toString() : null);
 		dto.setGmail(user.getGmail());
 		dto.setRoles(user.getRoles());
 		dto.setDepartment(user.getDepartment() != null ? user.getDepartment().getName() : null);
 		dto.setYear(user.getYear() != null ? user.getYear().getYearNumber() : null);
+		dto.setActive(user.isActive());
 		dto.setFirstLogin(user.isFirstLogin());
 		return dto;
 	}
 
 	// Convert DTO → Entity
 	private User mapToEntity(UserDto dto) {
-	    User user = new User();
-	    user.setId(dto.getId());
-	    user.setUsername(dto.getUsername());
-	    user.setPassword(dto.getPassword()); 
-	    user.setName(dto.getName());
-	    user.setMobileNumber(dto.getMobileNumber());
-	    user.setGmail(dto.getGmail());
+		User user = new User();
+		user.setId(dto.getId());
+		user.setUsername(dto.getUsername());
+		user.setPassword(dto.getPassword());
+		user.setName(dto.getName());
+		user.setMobileNumber(dto.getMobileNumber());
+		user.setGmail(dto.getGmail());
+		user.setActive(dto.isActive());
 
-	    // Handle Role Conversion
-	    Set<Role> roles = dto.getRoles().stream()
-	            .map(r -> roleRepository.findByName(r.getName()))
-	            .collect(Collectors.toSet());
-	    user.setRoles(roles);
+		// Handle Role Conversion
+		Set<Role> roles = dto.getRoles().stream().map(r -> roleRepository.findByName(r.getName()))
+				.collect(Collectors.toSet());
+		user.setRoles(roles);
 
-	    // Check if user is ADMIN or TEACHER
-	    boolean isAdminOrTeacher = roles.stream()
-	            .anyMatch(r -> r.getName().equalsIgnoreCase("ADMIN") || r.getName().equalsIgnoreCase("TEACHER"));
+		// Check if user is ADMIN or TEACHER
+		boolean isAdminOrTeacher = roles.stream()
+				.anyMatch(r -> r.getName().equalsIgnoreCase("ADMIN") || r.getName().equalsIgnoreCase("TEACHER"));
 
-	    // Department – only for STUDENT
-	    if (!isAdminOrTeacher && dto.getDepartment() != null && !dto.getDepartment().isBlank()) {
-	        Department dept = departmentRepository.findByName(dto.getDepartment());
-	        if (dept == null) {
-	            throw new RuntimeException("Invalid department: " + dto.getDepartment());
-	        }
-	        user.setDepartment(dept);
-	    } else {
-	        user.setDepartment(null);
-	    }
+		// Department – only for STUDENT
+		if (!isAdminOrTeacher && dto.getDepartment() != null && !dto.getDepartment().isBlank()) {
+			Department dept = departmentRepository.findByName(dto.getDepartment());
+			if (dept == null) {
+				throw new RuntimeException("Invalid department: " + dto.getDepartment());
+			}
+			user.setDepartment(dept);
+		} else {
+			user.setDepartment(null);
+		}
 
-	    // Year – only for STUDENT
-	    if (!isAdminOrTeacher && dto.getYear() != null) {
-	        Year yearLevel = yearRepository.findByYearNumber(dto.getYear());
-	        if (yearLevel == null) {
-	            throw new RuntimeException("Invalid year: " + dto.getYear());
-	        }
-	        user.setYear(yearLevel);
-	    } else {
-	        user.setYear(null);
-	    }
+		// Year – only for STUDENT
+		if (!isAdminOrTeacher && dto.getYear() != null) {
+			Year yearLevel = yearRepository.findByYearNumber(dto.getYear());
+			if (yearLevel == null) {
+				throw new RuntimeException("Invalid year: " + dto.getYear());
+			}
+			user.setYear(yearLevel);
+		} else {
+			user.setYear(null);
+		}
 
-	    if (dto.getDateOfBirth() != null) {
-	        user.setDateOfBirth(LocalDate.parse(dto.getDateOfBirth()));
-	    }
+		if (dto.getDateOfBirth() != null) {
+			user.setDateOfBirth(LocalDate.parse(dto.getDateOfBirth()));
+		}
 
-	    return user;
+		return user;
 	}
-
 
 	@Override
 	public UserDto register(UserDto userDto) {
-	    if (userRepository.findByUsername(userDto.getUsername()) != null) {
-	        throw new RuntimeException("User already exists");
-	    }
+		if (userRepository.findByUsername(userDto.getUsername()) != null) {
+			throw new RuntimeException("User already exists");
+		}
 
-	    // Decrypt AES password from frontend
-	    String decryptedPassword = AESUtil.decrypt(userDto.getPassword());
+		// Decrypt AES password from frontend
+		String decryptedPassword = AESUtil.decrypt(userDto.getPassword());
 
-	    // Hash with BCrypt
-	    String hashedPassword = passwordEncoder.encode(decryptedPassword);
+		// Hash with BCrypt
+		String hashedPassword = passwordEncoder.encode(decryptedPassword);
 
-	    // Map and save
-	    User user = mapToEntity(userDto);
-	    user.setPassword(hashedPassword); // store hashed password
-	    user.setFirstLogin(true); // mark as first login if you need that
-	    User saved = userRepository.save(user);
+		// Map and save
+		User user = mapToEntity(userDto);
+		user.setPassword(hashedPassword); // store hashed password
+		user.setFirstLogin(true); // mark as first login if you need that
+		User saved = userRepository.save(user);
 
-	    return mapToDto(saved);
+		return mapToDto(saved);
 	}
-
-
 
 	@Override
 	public AuthResponseDTO generateToken(String username, String password) {
-	    String decryptedPassword = AESUtil.decrypt(password);
-	    User user = userRepository.findByUsername(username);
+		String decryptedPassword = AESUtil.decrypt(password);
+		User user = userRepository.findByUsername(username);
 
-	    if (user == null || !passwordEncoder.matches(decryptedPassword, user.getPassword())) {
-	        throw new RuntimeException("Invalid credentials");
-	    }
+		if (user == null || !passwordEncoder.matches(decryptedPassword, user.getPassword())) {
+			throw new RuntimeException("Invalid username or password");
+		}
 
-	    String accessToken = jwtUtil.generateToken(user.getUsername());
-	    String refreshToken = jwtUtil.generateRefreshToken(user.getUsername());
-	    return new AuthResponseDTO(accessToken, refreshToken);
+		if (!user.isActive()) {
+			throw new RuntimeException("Your account is inactive. Please contact admin.");
+		}
+
+		String accessToken = jwtUtil.generateToken(user.getUsername());
+		String refreshToken = jwtUtil.generateRefreshToken(user.getUsername());
+		return new AuthResponseDTO(accessToken, refreshToken);
+	}
+
+	@Override
+	public AuthResponseDTO refreshAccessToken(String refreshToken) {
+
+		// 1. Validate refresh token
+		if (!jwtUtil.validateToken(refreshToken)) {
+			throw new RuntimeException("Invalid or expired refresh token");
+		}
+
+		// 2. Extract username
+		String username = jwtUtil.extractUsername(refreshToken);
+
+		// 3. Generate new tokens
+		String newAccessToken = jwtUtil.generateToken(username);
+
+		return new AuthResponseDTO(newAccessToken, refreshToken);
 	}
 
 	@Override
 	public UserDto login(String username, String password) {
-	    String decryptedPassword = AESUtil.decrypt(password);
-	    User user = userRepository.findByUsername(username);
+		String decryptedPassword = AESUtil.decrypt(password);
+		User user = userRepository.findByUsername(username);
 
-	    if (user == null || !passwordEncoder.matches(decryptedPassword, user.getPassword())) {
-	        throw new RuntimeException("Invalid credentials");
-	    }
+		if (user == null || !passwordEncoder.matches(decryptedPassword, user.getPassword())) {
+			throw new RuntimeException("Invalid username or password");
+		}
 
-	    return mapToDto(user);
+		if (!user.isActive()) {
+			throw new RuntimeException("Your account is inactive. Please contact admin.");
+		}
+
+		return mapToDto(user);
 	}
-	
+
 	@Override
 	public void resetPassword(String username, String newPassword) {
-	    User user = userRepository.findByUsername(username);
-	    if (user == null) throw new RuntimeException("User not found");
+		User user = userRepository.findByUsername(username);
+		if (user == null)
+			throw new RuntimeException("User not found");
 
-	    String decrypted = AESUtil.decrypt(newPassword);
-	    user.setPassword(passwordEncoder.encode(decrypted));
-	    user.setFirstLogin(false);
-	    userRepository.save(user);
+		String decrypted = AESUtil.decrypt(newPassword);
+		user.setPassword(passwordEncoder.encode(decrypted));
+		user.setFirstLogin(false);
+		userRepository.save(user);
 	}
 
-	
-    @Override
-    public List<UserDto> getAllTeachersAndAdmins() {
-        List<String> roles = List.of("ADMIN", "TEACHER");
-        List<User> users = userRepository.findByRoleNames(roles);
+	@Override
+	public List<UserDto> getAllTeachersAndAdmins() {
+		List<String> roles = List.of("ADMIN", "TEACHER");
+		List<User> users = userRepository.findByRoleNames(roles);
 
-        return users.stream().map(this::mapToDto).collect(Collectors.toList());
-    }
-    
-    
-    
-    
-    
-    @Override
-    public Map<String, Object> getAllUsers(int page, int size) {
-        Pageable pageable = PageRequest.of(page, size, Sort.by("id").descending());
-        Page<User> userPage = userRepository.findAll(pageable);
+		return users.stream().map(this::mapToDto).collect(Collectors.toList());
+	}
 
-        List<UserDto> userDtos = userPage.getContent()
-                .stream()
-                .map(this::mapToDto)
-                .collect(Collectors.toList());
+	@Override
+	public Map<String, Object> getAllUsers(int page, int size) {
+		Pageable pageable = PageRequest.of(page, size, Sort.by("id").descending());
+		Page<User> userPage = userRepository.findAll(pageable);
 
-        Map<String, Object> response = new HashMap<>();
-        response.put("users", userDtos);
-        response.put("currentPage", userPage.getNumber());
-        response.put("totalItems", userPage.getTotalElements());
-        response.put("totalPages", userPage.getTotalPages());
-        return response;
-    }
+		List<UserDto> userDtos = userPage.getContent().stream().map(this::mapToDto).collect(Collectors.toList());
 
-    @Override
-    public UserDto getUserById(Long id) {
-        User user = userRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("User not found with ID: " + id));
-        return mapToDto(user);
-    }
+		Map<String, Object> response = new HashMap<>();
+		response.put("users", userDtos);
+		response.put("currentPage", userPage.getNumber());
+		response.put("totalItems", userPage.getTotalElements());
+		response.put("totalPages", userPage.getTotalPages());
+		return response;
+	}
 
-    @Override
-    public void updateUser(Long id, UserDto userDto) {
-        User existingUser = userRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("User not found with ID: " + id));
+	@Override
+	public UserDto getUserById(Long id) {
+		User user = userRepository.findById(id)
+				.orElseThrow(() -> new RuntimeException("User not found with ID: " + id));
+		return mapToDto(user);
+	}
 
-        // Update basic editable fields
-        existingUser.setName(userDto.getName());
-        existingUser.setGmail(userDto.getGmail());
-        existingUser.setMobileNumber(userDto.getMobileNumber());
+	@Override
+	public void updateUser(Long id, UserDto userDto) {
+		User existingUser = userRepository.findById(id)
+				.orElseThrow(() -> new RuntimeException("User not found with ID: " + id));
 
-        // Update date of birth if present
-        if (userDto.getDateOfBirth() != null) {
-            existingUser.setDateOfBirth(LocalDate.parse(userDto.getDateOfBirth()));
-        }
+		// Update basic editable fields
+		existingUser.setName(userDto.getName());
+		existingUser.setGmail(userDto.getGmail());
+		existingUser.setMobileNumber(userDto.getMobileNumber());
 
-        // Update roles if provided
-        Set<Role> roles = existingUser.getRoles(); // default existing roles
-        if (userDto.getRoles() != null && !userDto.getRoles().isEmpty()) {
-            roles = userDto.getRoles().stream()
-                    .map(r -> roleRepository.findByName(r.getName()))
-                    .collect(Collectors.toSet());
-            existingUser.setRoles(roles);
-        }
+		// Update date of birth if present
+		if (userDto.getDateOfBirth() != null) {
+			existingUser.setDateOfBirth(LocalDate.parse(userDto.getDateOfBirth()));
+		}
 
-        // Check if user is ADMIN or TEACHER
-        boolean isAdminOrTeacher = roles.stream()
-                .anyMatch(r -> r.getName().equalsIgnoreCase("ADMIN") || r.getName().equalsIgnoreCase("TEACHER"));
+		// Update roles if provided
+		Set<Role> roles = existingUser.getRoles(); // default existing roles
+		if (userDto.getRoles() != null && !userDto.getRoles().isEmpty()) {
+			roles = userDto.getRoles().stream().map(r -> roleRepository.findByName(r.getName()))
+					.collect(Collectors.toSet());
+			existingUser.setRoles(roles);
+		}
 
-        if (isAdminOrTeacher) {
-            // For Admin or Teacher → clear department and year
-            existingUser.setDepartment(null);
-            existingUser.setYear(null);
-        } else {
-            // For Student → update department and year normally
-            // Department
-            if (userDto.getDepartment() != null && !userDto.getDepartment().isBlank()) {
-                Department dept = departmentRepository.findByName(userDto.getDepartment());
-                if (dept == null) {
-                    dept = departmentRepository.save(new Department(userDto.getDepartment()));
-                }
-                existingUser.setDepartment(dept);
-            } else {
-                existingUser.setDepartment(null);
-            }
+		// Check if user is ADMIN or TEACHER
+		boolean isAdminOrTeacher = roles.stream()
+				.anyMatch(r -> r.getName().equalsIgnoreCase("ADMIN") || r.getName().equalsIgnoreCase("TEACHER"));
 
-            // Year
-            if (userDto.getYear() != null) {
-                Year yearLevel = yearRepository.findByYearNumber(userDto.getYear());
-                if (yearLevel == null) {
-                    throw new RuntimeException("Invalid year: " + userDto.getYear());
-                }
-                existingUser.setYear(yearLevel);
-            } else {
-                existingUser.setYear(null);
-            }
-        }
+		if (isAdminOrTeacher) {
+			// For Admin or Teacher → clear department and year
+			existingUser.setDepartment(null);
+			existingUser.setYear(null);
+		} else {
+			// For Student → update department and year normally
+			// Department
+			if (userDto.getDepartment() != null && !userDto.getDepartment().isBlank()) {
+				Department dept = departmentRepository.findByName(userDto.getDepartment());
+				if (dept == null) {
+					dept = departmentRepository.save(new Department(userDto.getDepartment()));
+				}
+				existingUser.setDepartment(dept);
+			} else {
+				existingUser.setDepartment(null);
+			}
 
-        userRepository.save(existingUser);
-    }
+			// Year
+			if (userDto.getYear() != null) {
+				Year yearLevel = yearRepository.findByYearNumber(userDto.getYear());
+				if (yearLevel == null) {
+					throw new RuntimeException("Invalid year: " + userDto.getYear());
+				}
+				existingUser.setYear(yearLevel);
+			} else {
+				existingUser.setYear(null);
+			}
+		}
 
+		userRepository.save(existingUser);
+	}
 
-    @Override
-    public void deleteUser(Long id) {
-        if (!userRepository.existsById(id)) {
-            throw new RuntimeException("User not found with ID: " + id);
-        }
-        userRepository.deleteById(id);
-    }
-    
-    @Override
-    public boolean usernameExists(String username) {
-        return userRepository.findByUsername(username) != null;
-    }
+	@Override
+	public void deleteUser(Long id) {
+		if (!userRepository.existsById(id)) {
+			throw new RuntimeException("User not found with ID: " + id);
+		}
+		userRepository.deleteById(id);
+	}
 
+	@Override
+	public boolean usernameExists(String username) {
+		return userRepository.findByUsername(username) != null;
+	}
+
+	@Override
+	public void updateStatus(Long id, boolean active) {
+		User user = userRepository.findById(id).orElseThrow(() -> new RuntimeException("User not found"));
+
+		user.setActive(active);
+		userRepository.save(user);
+	}
 
 }

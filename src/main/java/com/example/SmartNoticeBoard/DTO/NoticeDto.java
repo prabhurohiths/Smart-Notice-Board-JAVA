@@ -11,6 +11,7 @@ public class NoticeDto {
 	private Integer year;
 	private String postedBy;
 	private String postedDate;
+	private String expiryDate;
 	private List<String> imagePaths;
 	private String modifiedBy;
 	private String modifiedDate;
@@ -80,6 +81,14 @@ public class NoticeDto {
 
 	public void setPostedDate(String postedDate) {
 		this.postedDate = postedDate;
+	}
+	
+	public String getExpiryDate() {
+	    return expiryDate;
+	}
+
+	public void setExpiryDate(String expiryDate) {
+	    this.expiryDate = expiryDate;
 	}
 
 	public String getModifiedBy() {

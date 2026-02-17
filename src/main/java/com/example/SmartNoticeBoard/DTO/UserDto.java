@@ -16,6 +16,7 @@ public class UserDto {
 	private String mobileNumber;
 	private String dateOfBirth;
 	private String gmail;
+	private boolean active;
 	private boolean firstLogin;
 
 	public Long getId() {
@@ -85,6 +86,13 @@ public class UserDto {
 	}
 	public void setGmail(String gmail) {
 		this.gmail = gmail;
+	}
+	
+	public boolean isActive() {
+		return active;
+	}
+	public void setActive(boolean active) {
+		this.active = active;
 	}
 	
 	public boolean isFirstLogin() { 
